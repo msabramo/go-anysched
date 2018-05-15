@@ -1,4 +1,4 @@
-package hyperion
+package core
 
 import (
 	"context"

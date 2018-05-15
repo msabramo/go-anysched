@@ -1,4 +1,4 @@
-package hyperion
+package core
 
 type App struct {
 	ID    string
