@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	marathon "github.com/gambol99/go-marathon"
 )
@@ -14,32 +15,28 @@ type App interface {
 	SetID(string) App
 }
 
-type Operation interface {
-	// Async() AsyncOperation // returns an AsyncOperation if async; else nil
-}
+type Operation interface{}
 
 type AsyncOperation interface {
-	Wait(context.Context) error // Wait for async operation to finish and return error or nil
+	Wait(ctx context.Context, timeout time.Duration) error // Wait for async operation to finish and return error or nil
 }
 
 type marathonDeployment struct {
-	deploymentID string
-	appID        string
+	appID           string
+	deploymentIDs   []string
+	marathonManager marathonManager
 }
 
-func (d *marathonDeployment) Wait(ctx context.Context) error {
+func (d *marathonDeployment) Wait(ctx context.Context, timeout time.Duration) error {
 	fmt.Printf("Wait() called with d = %+v\n", d)
-	return nil
-}
-
-/*
-func (op *marathonOperation) Async() AsyncOperation {
-	if asyncOp, ok := op.Operation.(AsyncOperation); ok && asyncOp != nil {
-		return asyncOp
+	for _, deploymentID := range d.deploymentIDs {
+		err := d.marathonManager.marathonClient.WaitOnDeployment(deploymentID, timeout)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
-*/
 
 type AppDeployerConfig struct {
 	Type    string // e.g.: "marathon", "kubernetes", etc.
@@ -55,7 +52,7 @@ type AppDeployer interface {
 func NewAppDeployer(a AppDeployerConfig) (appDeployer AppDeployer, err error) {
 	switch a.Type {
 	case "marathon":
-		return NewMarathonManager()
+		return NewMarathonManager(a.Address)
 	default:
 		return nil, fmt.Errorf("Unknown type: %q", a.Type)
 	}
@@ -63,16 +60,17 @@ func NewAppDeployer(a AppDeployerConfig) (appDeployer AppDeployer, err error) {
 
 type marathonManager struct {
 	marathonClient marathon.Marathon
+	url            string
 }
 
-func NewMarathonManager() (*marathonManager, error) {
+func NewMarathonManager(url string) (*marathonManager, error) {
 	config := marathon.NewDefaultConfig()
-	config.URL = "http://127.0.0.1:8080"
+	config.URL = url
 	client, err := marathon.NewClient(config)
 	if err != nil {
 		return nil, err
 	}
-	m := &marathonManager{marathonClient: client}
+	m := &marathonManager{marathonClient: client, url: url}
 	return m, nil
 }
 
@@ -89,17 +87,21 @@ func (m *marathonManager) DeployApp(app App) (Operation, error) {
 	if err != nil {
 		return nil, err
 	}
-	op := &marathonDeployment{appID: gomApp.ID}
+	marathonDeploymentIDs := gomApp.DeploymentIDs()
+	deploymentIDStrings := make([]string, len(marathonDeploymentIDs))
+	for i, marathonDeploymentID := range marathonDeploymentIDs {
+		deploymentIDStrings[i] = marathonDeploymentID.DeploymentID
+	}
+	op := &marathonDeployment{appID: gomApp.ID, deploymentIDs: deploymentIDStrings, marathonManager: *m}
 	return op, err
 }
 
 func (m *marathonManager) DestroyApp(appID string) (Operation, error) {
 	force := false
 	marathonDeploymentID, err := m.marathonClient.DeleteApplication(appID, force)
-	fmt.Printf("marathonDeploymentID = %+v\n", marathonDeploymentID)
 	if err != nil {
 		return nil, err
 	}
-	op := &marathonDeployment{appID: appID}
+	op := &marathonDeployment{appID: appID, deploymentIDs: []string{marathonDeploymentID.DeploymentID}, marathonManager: *m}
 	return op, err
 }

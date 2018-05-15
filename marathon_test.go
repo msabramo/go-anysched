@@ -41,7 +41,7 @@ var _ = Describe("app.go", func() {
 			Expect(operation).ToNot(BeNil())
 
 			if asyncOperation, ok := operation.(AsyncOperation); ok && asyncOperation != nil {
-				asyncOperation.Wait(ctx)
+				asyncOperation.Wait(ctx, 60*time.Second)
 			}
 
 			time.Sleep(10 * time.Second)
