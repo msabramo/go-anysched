@@ -2,6 +2,8 @@ package: git.corp.adobe.com/adobe-platform/hyperion
 import:
 - package: github.com/gambol99/go-marathon
   version: ^0.7.1
+- package: k8s.io/client-go
+  version: ^7.0.0
 testImport:
 - package: github.com/golang/mock
   version: ^1.1.1

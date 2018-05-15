@@ -32,11 +32,12 @@ var _ = Describe("app.go", func() {
 				},
 			)
 			Expect(err).ToNot(HaveOccurred())
-			marathonApp := appDeployer.NewApp().
-				SetID("my-app").
-				SetDockerImage("citizenstig/httpbin:latest").
-				SetCount(2)
-			operation, err := appDeployer.DeployApp(marathonApp)
+			app := App{
+				ID:    "my-app",
+				Image: "citizenstig/httpbin:latest",
+				Count: 2,
+			}
+			operation, err := appDeployer.DeployApp(app)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(operation).ToNot(BeNil())
 
