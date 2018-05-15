@@ -25,19 +25,30 @@ var _ = Describe("app.go", func() {
 
 	Describe("MarathonManager.CreateApplication", func() {
 		It("deploys an application to Marathon", func() {
-			marathonManager, err := NewMarathonManager()
+			appDeployer, err := NewAppDeployer(
+				AppDeployerConfig{
+					Type:    "marathon",
+					Address: "http://127.0.0.1:8080",
+				},
+			)
 			Expect(err).ToNot(HaveOccurred())
-			marathonApp := marathonManager.NewApp().
+			marathonApp := appDeployer.NewApp().
 				SetID("my-app").
 				SetDockerImage("citizenstig/httpbin:latest").
-				SetCount(4)
-			marathonApp, err = marathonManager.CreateApplication(marathonApp)
+				SetCount(2)
+			operation, err := appDeployer.DeployApp(marathonApp)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(ctx).ToNot(BeNil())
+			Expect(operation).ToNot(BeNil())
+
+			if asyncOperation, ok := operation.(AsyncOperation); ok && asyncOperation != nil {
+				asyncOperation.Wait(ctx)
+			}
+
 			time.Sleep(10 * time.Second)
-			deleteRequest := marathonApp.NewDeleteRequest()
-			err = marathonManager.DeleteApplication(deleteRequest)
+
+			destroyOperation, err := appDeployer.DestroyApp("my-app")
 			Expect(err).ToNot(HaveOccurred())
+			Expect(destroyOperation).ToNot(BeNil())
 		})
 	})
 })
