@@ -17,18 +17,6 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-type App struct {
-	ID    string
-	Image string
-	Count int
-}
-
-type Operation interface{}
-
-type AsyncOperation interface {
-	Wait(ctx context.Context, timeout time.Duration) error // Wait for async operation to finish and return error or nil
-}
-
 type marathonDeployment struct {
 	appID           string
 	deploymentIDs   []string
