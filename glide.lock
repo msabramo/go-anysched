@@ -1,8 +1,65 @@
-hash: dc387ed928b0c4c2afbef6abfd7c52693128fb004a609b7e97d3ac95f384aa15
-updated: 2018-05-14T23:58:05.584548989-07:00
+hash: cae069a4e695209f38a34121b9a09e92036c5e8c058e09eeed5ca28bcf707ba7
+updated: 2018-05-15T16:59:27.668990182-07:00
 imports:
+- name: github.com/docker/distribution
+  version: 83389a148052d74ac602f5f1d62f86ff2f3c4aa5
+  subpackages:
+  - digestset
+  - reference
+- name: github.com/docker/docker
+  version: 90d35abf7b3535c1c319c872900fbd76374e521c
+  subpackages:
+  - api
+  - api/types
+  - api/types/blkiodev
+  - api/types/container
+  - api/types/events
+  - api/types/filters
+  - api/types/image
+  - api/types/mount
+  - api/types/network
+  - api/types/registry
+  - api/types/strslice
+  - api/types/swarm
+  - api/types/time
+  - api/types/versions
+  - api/types/volume
+  - client
+  - pkg/ioutils
+  - pkg/longpath
+  - pkg/parsers/kernel
+  - pkg/random
+  - pkg/stringid
+  - pkg/system
+  - pkg/tlsconfig
+- name: github.com/docker/go-connections
+  version: 7395e3f8aa162843a74ed6d48e79627d9792ac55
+  subpackages:
+  - nat
+  - sockets
+  - tlsconfig
+- name: github.com/docker/go-events
+  version: 9461782956ad83b30282bf90e31fa6a70c255ba9
+- name: github.com/docker/go-units
+  version: 47565b4f722fb6ceae66b95f853feed578a4a51c
+- name: github.com/docker/libtrust
+  version: aabc10ec26b754e797f9028f4589c5b7bd90dc20
+- name: github.com/docker/swarm
+  version: 39939d7658ff554cb96754980e80addb9c939a46
+  subpackages:
+  - api
+  - api/nopclient
+  - cluster
+  - experimental
+  - swarmclient
+  - version
+- name: github.com/docker/swarmkit
+  version: b39ef4960a3170b36cef5c6dc79e170e0c95c81a
+  subpackages:
+  - watch
+  - watch/queue
 - name: github.com/donovanhide/eventsource
-  version: b8f31a59085e69dd2678cf51840db2ac625cb741
+  version: 3ed64d21fb0b6bd8b49bcfec08f3004daee8723d
 - name: github.com/gambol99/go-marathon
   version: 6b00a5b651b1beb2c6821863f7c60df490bd46c8
 - name: github.com/ghodss/yaml
@@ -34,12 +91,31 @@ imports:
   - OpenAPIv2
   - compiler
   - extensions
+- name: github.com/gorilla/context
+  version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
+- name: github.com/gorilla/mux
+  version: e3702bed27f0d39777b0b37b664b6280e8ef8fbf
 - name: github.com/howeyc/gopass
   version: bf9dde6d0d2c004a008c27aaee91170c786f6db8
 - name: github.com/imdario/mergo
   version: 6633656539c1639d9d78127b7d47c622b5d7b6dc
 - name: github.com/json-iterator/go
   version: 13f86432b882000a51c6e610c620974462691a97
+- name: github.com/mattn/go-shellwords
+  version: 39dbbfa24bbc39559b61cae9b20b0e8db0e55525
+- name: github.com/Microsoft/go-winio
+  version: ab35fc04b6365e8fcb18e6e9e41ea4a02b10b175
+- name: github.com/opencontainers/go-digest
+  version: c9281466c8b2f606084ac71339773efd177436e7
+- name: github.com/pkg/errors
+  version: 816c9085562cd7ee03e7f8188a1cfd942858cded
+- name: github.com/Sirupsen/logrus
+  version: a437dfd2463eaedbec3dfe443e477d3b0a810b3f
+  repo: git@github.com:sirupsen/logrus
+- name: github.com/sirupsen/logrus
+  version: a437dfd2463eaedbec3dfe443e477d3b0a810b3f
+- name: github.com/skarademir/naturalsort
+  version: 69a5d87bef620f77ee8508db30c846b3b84b111e
 - name: github.com/spf13/pflag
   version: 4c012f6dcd9546820e378d0bdda4d8fc772cdfea
 - name: golang.org/x/crypto
@@ -58,6 +134,7 @@ imports:
   - http2/hpack
   - idna
   - lex/httplex
+  - proxy
 - name: golang.org/x/sys
   version: 95c6576299259db960f6c5b9b69ea52422860fce
   subpackages:
@@ -113,7 +190,6 @@ imports:
   - core/v1
   - events/v1beta1
   - extensions/v1beta1
-  - imagepolicy/v1alpha1
   - networking/v1
   - policy/v1beta1
   - rbac/v1
@@ -127,18 +203,10 @@ imports:
 - name: k8s.io/apimachinery
   version: 302974c03f7e50f16561ba237db776ab93594ef6
   subpackages:
-  - pkg/api/equality
   - pkg/api/errors
   - pkg/api/meta
   - pkg/api/resource
-  - pkg/api/testing
-  - pkg/api/testing/fuzzer
-  - pkg/api/testing/roundtrip
-  - pkg/apimachinery
-  - pkg/apimachinery/announced
-  - pkg/apimachinery/registered
-  - pkg/apis/meta/fuzzer
-  - pkg/apis/meta/internalversion
+  - pkg/api/resource
   - pkg/apis/meta/v1
   - pkg/apis/meta/v1/unstructured
   - pkg/apis/meta/v1beta1
@@ -147,6 +215,8 @@ imports:
   - pkg/fields
   - pkg/labels
   - pkg/runtime
+  - pkg/runtime
+  - pkg/runtime/schema
   - pkg/runtime/schema
   - pkg/runtime/serializer
   - pkg/runtime/serializer/json
@@ -156,29 +226,22 @@ imports:
   - pkg/runtime/serializer/versioning
   - pkg/selection
   - pkg/types
-  - pkg/util/cache
+  - pkg/types
   - pkg/util/clock
-  - pkg/util/diff
   - pkg/util/errors
   - pkg/util/framer
-  - pkg/util/httpstream
-  - pkg/util/httpstream/spdy
+  - pkg/util/intstr
   - pkg/util/intstr
   - pkg/util/json
-  - pkg/util/mergepatch
   - pkg/util/net
-  - pkg/util/remotecommand
   - pkg/util/runtime
   - pkg/util/sets
-  - pkg/util/strategicpatch
   - pkg/util/validation
   - pkg/util/validation/field
   - pkg/util/wait
   - pkg/util/yaml
   - pkg/version
   - pkg/watch
-  - third_party/forked/golang/json
-  - third_party/forked/golang/netutil
   - third_party/forked/golang/reflect
 - name: k8s.io/client-go
   version: 23781f4d6632d88e869066eaebb743857aa1ef9b

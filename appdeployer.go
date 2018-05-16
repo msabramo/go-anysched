@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"git.corp.adobe.com/adobe-platform/hyperion/core"
+	"git.corp.adobe.com/adobe-platform/hyperion/dockerswarm"
 	"git.corp.adobe.com/adobe-platform/hyperion/kubernetes"
 	"git.corp.adobe.com/adobe-platform/hyperion/marathon"
 )
@@ -24,6 +25,8 @@ func NewAppDeployer(a AppDeployerConfig) (appDeployer AppDeployer, err error) {
 		return marathon.NewMarathonManager(a.Address)
 	case "kubernetes":
 		return kubernetes.NewK8sManager(a.Address)
+	case "dockerswarm":
+		return dockerswarm.NewDockerSwarmManager(a.Address)
 	default:
 		return nil, fmt.Errorf("Unknown type: %q", a.Type)
 	}
