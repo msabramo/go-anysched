@@ -1,6 +1,8 @@
-hash: cae069a4e695209f38a34121b9a09e92036c5e8c058e09eeed5ca28bcf707ba7
-updated: 2018-05-15T16:59:27.668990182-07:00
+hash: 88d355e67eaa116cd323173e037508aefda45ff4a0a14f735dcedeb9cff5aaea
+updated: 2018-05-15T18:27:46.971575697-07:00
 imports:
+- name: github.com/armon/go-metrics
+  version: 783273d703149aaeb9897cf58613d5af48861c25
 - name: github.com/docker/distribution
   version: 83389a148052d74ac602f5f1d62f86ff2f3c4aa5
   subpackages:
@@ -27,9 +29,6 @@ imports:
   - client
   - pkg/ioutils
   - pkg/longpath
-  - pkg/parsers/kernel
-  - pkg/random
-  - pkg/stringid
   - pkg/system
   - pkg/tlsconfig
 - name: github.com/docker/go-connections
@@ -38,26 +37,10 @@ imports:
   - nat
   - sockets
   - tlsconfig
-- name: github.com/docker/go-events
-  version: 9461782956ad83b30282bf90e31fa6a70c255ba9
 - name: github.com/docker/go-units
   version: 47565b4f722fb6ceae66b95f853feed578a4a51c
 - name: github.com/docker/libtrust
   version: aabc10ec26b754e797f9028f4589c5b7bd90dc20
-- name: github.com/docker/swarm
-  version: 39939d7658ff554cb96754980e80addb9c939a46
-  subpackages:
-  - api
-  - api/nopclient
-  - cluster
-  - experimental
-  - swarmclient
-  - version
-- name: github.com/docker/swarmkit
-  version: b39ef4960a3170b36cef5c6dc79e170e0c95c81a
-  subpackages:
-  - watch
-  - watch/queue
 - name: github.com/donovanhide/eventsource
   version: 3ed64d21fb0b6bd8b49bcfec08f3004daee8723d
 - name: github.com/gambol99/go-marathon
@@ -91,20 +74,76 @@ imports:
   - OpenAPIv2
   - compiler
   - extensions
-- name: github.com/gorilla/context
-  version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
-- name: github.com/gorilla/mux
-  version: e3702bed27f0d39777b0b37b664b6280e8ef8fbf
+- name: github.com/gorhill/cronexpr
+  version: 88b0669f7d75f171bd612b874e52b95c190218df
+- name: github.com/hashicorp/consul
+  version: 37cd264a8b90c594986209a9df2dd3c5ef5a1b8d
+  subpackages:
+  - api
+- name: github.com/hashicorp/errwrap
+  version: 7554cd9344cec97297fa6649b055a8c98c2a1e55
+- name: github.com/hashicorp/go-cleanhttp
+  version: d5fe4b57a186c716b0e00b8c301cbd9b4182694d
+- name: github.com/hashicorp/go-immutable-radix
+  version: 7f3cd4390caab3250a57f30efdb2a65dd7649ecf
+- name: github.com/hashicorp/go-msgpack
+  version: fa3f63826f7c23912c15263591e65d54d080b458
+  subpackages:
+  - codec
+- name: github.com/hashicorp/go-multierror
+  version: b7773ae218740a7be65057fc60b366a49b538a44
+- name: github.com/hashicorp/go-rootcerts
+  version: 6bb64b370b90e7ef1fa532be9e591a81c3493e00
+- name: github.com/hashicorp/go-version
+  version: 23480c0665776210b5fbbac6eaaee40e3e6a96b7
+- name: github.com/hashicorp/golang-lru
+  version: a0d98a5f288019575c6d1f4bb1573fef2d1fcdc4
+  subpackages:
+  - simplelru
+- name: github.com/hashicorp/hcl
+  version: ef8a98b0bbce4a65b5aa4c368430a80ddc533168
+  subpackages:
+  - hcl/ast
+  - hcl/parser
+  - hcl/scanner
+  - hcl/strconv
+  - hcl/token
+  - json/parser
+  - json/scanner
+  - json/token
+- name: github.com/hashicorp/nomad
+  version: 1eedb7753f93dcd827819e42e8583cebe5fbc075
+  subpackages:
+  - acl
+  - api
+  - api/contexts
+  - helper
+  - helper/args
+  - helper/flatmap
+  - helper/uuid
+  - nomad/structs
+- name: github.com/hashicorp/raft
+  version: a3fb4581fb07b16ecf1c3361580d4bdb17de9d98
+- name: github.com/hashicorp/serf
+  version: 80ab48778deee28e4ea2dc4ef1ebb2c5f4063996
+  subpackages:
+  - coordinate
 - name: github.com/howeyc/gopass
   version: bf9dde6d0d2c004a008c27aaee91170c786f6db8
 - name: github.com/imdario/mergo
   version: 6633656539c1639d9d78127b7d47c622b5d7b6dc
 - name: github.com/json-iterator/go
   version: 13f86432b882000a51c6e610c620974462691a97
-- name: github.com/mattn/go-shellwords
-  version: 39dbbfa24bbc39559b61cae9b20b0e8db0e55525
 - name: github.com/Microsoft/go-winio
   version: ab35fc04b6365e8fcb18e6e9e41ea4a02b10b175
+- name: github.com/mitchellh/copystructure
+  version: d23ffcb85de31694d6ccaa23ccb4a03e55c1303f
+- name: github.com/mitchellh/go-homedir
+  version: b8bc1bf767474819792c23f32d8286a45736f1c6
+- name: github.com/mitchellh/hashstructure
+  version: 2bca23e0e452137f789efbc8610126fd8b94f73b
+- name: github.com/mitchellh/reflectwalk
+  version: 63d60e9d0dbc60cf9164e6510889b0db6683d98c
 - name: github.com/opencontainers/go-digest
   version: c9281466c8b2f606084ac71339773efd177436e7
 - name: github.com/pkg/errors
@@ -112,15 +151,16 @@ imports:
 - name: github.com/Sirupsen/logrus
   version: a437dfd2463eaedbec3dfe443e477d3b0a810b3f
   repo: git@github.com:sirupsen/logrus
-- name: github.com/sirupsen/logrus
-  version: a437dfd2463eaedbec3dfe443e477d3b0a810b3f
-- name: github.com/skarademir/naturalsort
-  version: 69a5d87bef620f77ee8508db30c846b3b84b111e
 - name: github.com/spf13/pflag
   version: 4c012f6dcd9546820e378d0bdda4d8fc772cdfea
+- name: github.com/ugorji/go
+  version: f3cacc17c85ecb7f1b6a9e373ee85d1480919868
+  subpackages:
+  - codec
 - name: golang.org/x/crypto
   version: 81e90905daefcd6fd217b62423c0908922eadb30
   subpackages:
+  - blake2b
   - ssh/terminal
 - name: golang.org/x/net
   version: 1c05540f6879653db88113bc4a2b70aec4bd491f

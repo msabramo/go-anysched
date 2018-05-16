@@ -11,6 +11,10 @@ import:
   version: ^17.5.0-ce-rc3
   subpackages:
   - client
+- package: github.com/hashicorp/nomad
+  version: ^0.8.3
+  subpackages:
+  - api
 testImport:
 - package: github.com/golang/mock
   version: ^1.1.1

@@ -7,6 +7,7 @@ import (
 	"git.corp.adobe.com/adobe-platform/hyperion/dockerswarm"
 	"git.corp.adobe.com/adobe-platform/hyperion/kubernetes"
 	"git.corp.adobe.com/adobe-platform/hyperion/marathon"
+	"git.corp.adobe.com/adobe-platform/hyperion/nomad"
 )
 
 type AppDeployerConfig struct {
@@ -27,6 +28,8 @@ func NewAppDeployer(a AppDeployerConfig) (appDeployer AppDeployer, err error) {
 		return kubernetes.NewK8sManager(a.Address)
 	case "dockerswarm":
 		return dockerswarm.NewDockerSwarmManager(a.Address)
+	case "nomad":
+		return nomad.NewNomadManager(a.Address)
 	default:
 		return nil, fmt.Errorf("Unknown type: %q", a.Type)
 	}
