@@ -11,6 +11,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -59,24 +60,16 @@ func (k *k8sManager) DeployApp(app core.App) (core.Operation, error) {
 		ObjectMeta: metav1.ObjectMeta{Name: app.ID},
 		Spec: appsv1.DeploymentSpec{
 			Replicas: &countInt32,
-			Selector: &metav1.LabelSelector{
-				MatchLabels: map[string]string{"appID": app.ID},
-			},
+			Selector: &metav1.LabelSelector{MatchLabels: map[string]string{"appID": app.ID}},
 			Template: apiv1.PodTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{
-					Labels: map[string]string{"appID": app.ID},
-				},
+				ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{"appID": app.ID}},
 				Spec: apiv1.PodSpec{
 					Containers: []apiv1.Container{
 						{
 							Name:  app.ID,
 							Image: app.Image,
 							Ports: []apiv1.ContainerPort{
-								{
-									Name:          "http",
-									Protocol:      apiv1.ProtocolTCP,
-									ContainerPort: 80,
-								},
+								{Name: "http", Protocol: apiv1.ProtocolTCP, ContainerPort: 80},
 							},
 						},
 					},

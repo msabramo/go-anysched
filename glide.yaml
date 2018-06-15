@@ -4,6 +4,8 @@ import:
   version: ^0.7.1
 - package: k8s.io/client-go
   version: ^7.0.0
+  subpackages:
+  - plugin/pkg/client/auth
 - package: github.com/Sirupsen/logrus
   version: a437dfd2463eaedbec3dfe443e477d3b0a810b3f
   repo: git@github.com:sirupsen/logrus
