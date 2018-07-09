@@ -8,7 +8,7 @@ import (
 	"github.com/docker/docker/api/types/swarm"
 	dockerclient "github.com/docker/docker/client"
 
-	"git.corp.adobe.com/adobe-platform/hyperion/core"
+	"git.corp.adobe.com/abramowi/hyperion/core"
 )
 
 var ctx = context.TODO()

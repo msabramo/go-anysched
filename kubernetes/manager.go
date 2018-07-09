@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"git.corp.adobe.com/adobe-platform/hyperion/core"
+	"git.corp.adobe.com/abramowi/hyperion/core"
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

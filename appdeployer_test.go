@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"git.corp.adobe.com/adobe-platform/hyperion/core"
+	"git.corp.adobe.com/abramowi/hyperion/core"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

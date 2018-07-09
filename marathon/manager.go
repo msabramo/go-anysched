@@ -3,7 +3,7 @@ package marathon
 import (
 	goMarathon "github.com/gambol99/go-marathon"
 
-	"git.corp.adobe.com/adobe-platform/hyperion/core"
+	"git.corp.adobe.com/abramowi/hyperion/core"
 )
 
 type marathonManager struct {
