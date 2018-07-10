@@ -13,5 +13,9 @@ type k8sDeployment struct {
 func (self k8sDeployment) String() string {
 	name := self.appsv1Deployment.GetObjectMeta().GetName()
 	uid := self.appsv1Deployment.GetObjectMeta().GetUID()
-	return fmt.Sprintf("<k8sDeployment name=%q uid=%q />", name, uid)
+	creationTimestamp := self.appsv1Deployment.GetObjectMeta().GetCreationTimestamp()
+	return fmt.Sprintf(
+		"<k8sDeployment name=%q uid=%q creationTimestamp=%q />",
+		name, uid, creationTimestamp,
+	)
 }
