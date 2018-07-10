@@ -23,13 +23,13 @@ type AppDeployer interface {
 func NewAppDeployer(a AppDeployerConfig) (appDeployer AppDeployer, err error) {
 	switch a.Type {
 	case "marathon":
-		return marathon.NewMarathonManager(a.Address)
+		return marathon.NewManager(a.Address)
 	case "kubernetes":
-		return kubernetes.NewK8sManager(a.Address)
+		return kubernetes.NewManager(a.Address)
 	case "dockerswarm":
-		return dockerswarm.NewDockerSwarmManager(a.Address)
+		return dockerswarm.NewManager(a.Address)
 	case "nomad":
-		return nomad.NewNomadManager(a.Address)
+		return nomad.NewManager(a.Address)
 	default:
 		return nil, fmt.Errorf("Unknown type: %q", a.Type)
 	}

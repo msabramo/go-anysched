@@ -11,6 +11,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes/typed/apps/v1"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -18,31 +19,50 @@ import (
 	"git.corp.adobe.com/abramowi/hyperion/lib/core"
 )
 
-type k8sManager struct {
-	clientset *kubernetes.Clientset
+type manager struct {
+	clientset         *kubernetes.Clientset
+	deploymentsClient v1.DeploymentInterface
 }
 
-func k8SConfigFromKubeConfig() *rest.Config {
+func configFromKubeconfig() (*rest.Config, error) {
+	// use the current context in kubeconfig
+	config, err := clientcmd.BuildConfigFromFlags("", getKubeconfig())
+	if err != nil {
+		return nil, errors.Wrap(err, "kubernetes.configFromKubeconfig: clientcmd.BuildConfigFromFlags failed")
+	}
+	return config, nil
+}
+
+func getKubeconfig() string {
 	var kubeconfig *string
-	if home := os.Getenv("HOME"); home != "" {
-		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
+
+	defaultKubeconfigFilePath := getDefaultKubeconfigFilePath(os.Getenv("HOME"))
+	if defaultKubeconfigFilePath != "" {
+		kubeconfig = flag.String("kubeconfig", defaultKubeconfigFilePath, "(optional) absolute path to the kubeconfig file")
 	} else {
 		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
 	}
+
 	flag.Parse()
 
-	// use the current context in kubeconfig
-	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
-	if err != nil {
-		panic(err.Error())
-	}
-	return config
+	return *kubeconfig
 }
 
-func NewK8sManager(url string) (*k8sManager, error) {
-	clientset, err := kubernetes.NewForConfig(k8SConfigFromKubeConfig())
+func getDefaultKubeconfigFilePath(homeDirPath string) string {
+	if homeDirPath != "" {
+		return filepath.Join(homeDirPath, ".kube", "config")
+	}
+	return ""
+}
+
+func NewManager(url string) (*manager, error) {
+	restConfig, err := configFromKubeconfig()
 	if err != nil {
 		return nil, err
+	}
+	clientset, err := kubernetes.NewForConfig(restConfig)
+	if err != nil {
+		return nil, errors.Wrap(err, "kubernetes.NewManager: kubernetes.NewForConfig failed")
 	}
 	// fmt.Printf("*** clientset = %+v\n", clientset)
 	// namespaces, err := clientset.CoreV1().Namespaces().List(metav1.ListOptions{})
@@ -50,15 +70,34 @@ func NewK8sManager(url string) (*k8sManager, error) {
 	// pods, err := clientset.CoreV1().Pods("").List(metav1.ListOptions{})
 	// fmt.Printf("*** pods = %+v\n", pods)
 
-	k8s := &k8sManager{clientset: clientset}
-	return k8s, nil
+	mgr := &manager{
+		clientset:         clientset,
+		deploymentsClient: clientset.AppsV1().Deployments(apiv1.NamespaceDefault),
+	}
+	return mgr, nil
 }
 
-func (k *k8sManager) DeployApp(app core.App) (core.Operation, error) {
-	deploymentsClient := k.clientset.AppsV1().Deployments(apiv1.NamespaceDefault)
+func (mgr *manager) DeployApp(app core.App) (core.Operation, error) {
+	k8sDeployment := getK8sDeployment(app)
+	result, err := mgr.deploymentsClient.Create(k8sDeployment)
+	if err != nil {
+		return nil, errors.Wrap(err, "kubernetes.manager.DeployApp: deploymentsClient.Create failed")
+	}
 
+	return deployment{appsv1Deployment: result}, nil
+}
+
+func (mgr *manager) DestroyApp(appID string) (core.Operation, error) {
+	err := mgr.deploymentsClient.Delete(appID, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "kubernetes.manager.DestroyApp: deploymentsClient.Delete failed")
+	}
+	return nil, nil
+}
+
+func getK8sDeployment(app core.App) *appsv1.Deployment {
 	countInt32 := int32(app.Count)
-	deployment := &appsv1.Deployment{
+	k8sDeployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{Name: app.ID},
 		Spec: appsv1.DeploymentSpec{
 			Replicas: &countInt32,
@@ -79,20 +118,5 @@ func (k *k8sManager) DeployApp(app core.App) (core.Operation, error) {
 			},
 		},
 	}
-
-	// Create Deployment
-	result, err := deploymentsClient.Create(deployment)
-	if err != nil {
-		return nil, errors.Wrap(err, "k8sManager.DeployApp: deploymentsClient.Create failed")
-	}
-	operation := k8sDeployment{appsv1Deployment: result}
-
-	return operation, err
-}
-
-func (k *k8sManager) DestroyApp(appID string) (core.Operation, error) {
-	deploymentsClient := k.clientset.AppsV1().Deployments(apiv1.NamespaceDefault)
-
-	err := deploymentsClient.Delete(appID, nil)
-	return nil, err
+	return k8sDeployment
 }

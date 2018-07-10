@@ -5,36 +5,54 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/nomad/api"
+	"github.com/pkg/errors"
 
 	"git.corp.adobe.com/abramowi/hyperion/lib/core"
 )
 
 var ctx = context.TODO()
 
-type nomadManager struct {
-	client *api.Client
-	url    string
+type manager struct {
+	client     *api.Client
+	jobsClient *api.Jobs
+	url        string
 }
 
-func NewNomadManager(url string) (*nomadManager, error) {
+func NewManager(url string) (*manager, error) {
 	config := &api.Config{Address: url}
 	client, err := api.NewClient(config)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "nomad.NewManager: api.NewClient failed")
 	}
-	manager := &nomadManager{
-		client: client,
-		url:    url,
-	}
-	return manager, nil
+	return &manager{client: client, jobsClient: client.Jobs(), url: url}, nil
 }
 
 func Sptr(s string) *string {
 	return &s
 }
 
-func (m *nomadManager) DeployApp(app core.App) (core.Operation, error) {
-	job := &api.Job{
+func (mgr *manager) DeployApp(app core.App) (core.Operation, error) {
+	job := getJob(app)
+	jobRegisterResponse, writeMeta, err := mgr.jobsClient.Register(job, &api.WriteOptions{})
+	fmt.Printf("*** jobRegisterResponse = %+v; writeMeta = %+v; err = %+v\n", jobRegisterResponse, writeMeta, err)
+	if err != nil {
+		return nil, errors.Wrap(err, "nomad.manager.DeployApp: mgr.jobsClient.Register failed")
+	}
+	return nil, nil
+}
+
+func (mgr *manager) DestroyApp(appID string) (core.Operation, error) {
+	purge := true
+	jobDeregisterResponse, writeMeta, err := mgr.jobsClient.Deregister(appID, purge, &api.WriteOptions{})
+	fmt.Printf("*** jobDeregisterResponse = %+v; writeMeta = %+v; err = %+v\n", jobDeregisterResponse, writeMeta, err)
+	if err != nil {
+		return nil, errors.Wrap(err, "nomad.manager.DestroyApp: mgr.jobsClient.Deregister failed")
+	}
+	return nil, err
+}
+
+func getJob(app core.App) *api.Job {
+	return &api.Job{
 		ID:          Sptr(app.ID),
 		Name:        Sptr(app.ID),
 		Type:        Sptr(api.JobTypeService),
@@ -55,16 +73,4 @@ func (m *nomadManager) DeployApp(app core.App) (core.Operation, error) {
 			},
 		},
 	}
-	q := &api.WriteOptions{}
-	jobRegisterResponse, writeMeta, err := m.client.Jobs().Register(job, q)
-	fmt.Printf("*** jobRegisterResponse = %+v; writeMeta = %+v; err = %+v\n", jobRegisterResponse, writeMeta, err)
-	return nil, err
-}
-
-func (m *nomadManager) DestroyApp(appID string) (core.Operation, error) {
-	purge := true
-	q := &api.WriteOptions{}
-	jobDeregisterResponse, writeMeta, err := m.client.Jobs().Deregister(appID, purge, q)
-	fmt.Printf("*** jobDeregisterResponse = %+v; writeMeta = %+v; err = %+v\n", jobDeregisterResponse, writeMeta, err)
-	return nil, err
 }
