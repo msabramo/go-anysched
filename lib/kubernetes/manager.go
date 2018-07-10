@@ -2,11 +2,11 @@ package kubernetes
 
 import (
 	"flag"
-	"fmt"
 	"os"
 	"path/filepath"
 
-	"git.corp.adobe.com/abramowi/hyperion/lib/core"
+	"github.com/pkg/errors"
+
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -14,6 +14,8 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+
+	"git.corp.adobe.com/abramowi/hyperion/lib/core"
 )
 
 type k8sManager struct {
@@ -79,13 +81,11 @@ func (k *k8sManager) DeployApp(app core.App) (core.Operation, error) {
 	}
 
 	// Create Deployment
-	fmt.Println("Creating deployment...")
 	result, err := deploymentsClient.Create(deployment)
 	if err != nil {
-		panic(err)
+		return nil, errors.Wrap(err, "k8sManager.DeployApp: deploymentsClient.Create failed")
 	}
 	operation := k8sDeployment{appsv1Deployment: result}
-	fmt.Printf("Created deployment %+v (%q).\n", operation, result.GetObjectMeta().GetName())
 
 	return operation, err
 }
