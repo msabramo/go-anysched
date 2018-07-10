@@ -22,41 +22,36 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// destroyAppCmd represents the destroyApp command
-var destroyAppCmd = &cobra.Command{
-	Use:   "destroyApp",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+// deployAppCmd represents the deployApp command
+var deployAppCmd = &cobra.Command{
+	Use:   "deploy",
+	Short: "Deploy an application",
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
 		appDeployer := GetAppDeployer()
-		operation, err := appDeployer.DestroyApp(appID)
+		app := GetApp(appID)
+		operation, err := appDeployer.DeployApp(app)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "error: %s\n", err)
+			fmt.Fprintf(os.Stderr, "DeployApp error: %s\n", err)
 		}
 		fmt.Printf("operation = %+v\n", operation)
 		err = WaitForCompletion(ctx, operation)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "error: %s\n", err)
+			fmt.Fprintf(os.Stderr, "WaitForCompletion error: %s\n", err)
 		}
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(destroyAppCmd)
+	appCmd.AddCommand(deployAppCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// destroyAppCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// deployAppCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	destroyAppCmd.Flags().StringVarP(&appID, "app-id", "a", "", "app-id for new Marathon app")
+	deployAppCmd.Flags().StringVarP(&appID, "app-id", "a", "", "app-id for new Marathon app")
 }
