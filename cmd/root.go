@@ -107,10 +107,10 @@ func GetAppDeployer() AppDeployer {
 	// 	Type:    "marathon",
 	// 	Address: "http://127.0.0.1:8080",
 	// }
-	// appDeployerConfig := AppDeployerConfig{
-	// 	Type:    "kubernetes",
-	// 	Address: "kubeconfig",
-	// }
+	appDeployerConfig := AppDeployerConfig{
+		Type:    "kubernetes",
+		Address: "kubeconfig",
+	}
 	// appDeployerConfig := AppDeployerConfig{
 	// 	Type:    "dockerswarm",
 	// 	Address: "http://127.0.0.1:2377",
@@ -119,9 +119,6 @@ func GetAppDeployer() AppDeployer {
 	// 	Type:    "nomad",
 	// 	Address: "http://127.0.0.1:4646",
 	// }
-	appDeployerConfig := AppDeployerConfig{
-		Type: "awsecs",
-	}
 
 	appDeployer, err := NewAppDeployer(appDeployerConfig)
 	if err != nil {
