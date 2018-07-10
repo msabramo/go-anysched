@@ -3,11 +3,11 @@ package hyperion
 import (
 	"fmt"
 
-	"git.corp.adobe.com/abramowi/hyperion/core"
-	"git.corp.adobe.com/abramowi/hyperion/dockerswarm"
-	"git.corp.adobe.com/abramowi/hyperion/kubernetes"
-	"git.corp.adobe.com/abramowi/hyperion/marathon"
-	"git.corp.adobe.com/abramowi/hyperion/nomad"
+	"git.corp.adobe.com/abramowi/hyperion/lib/core"
+	"git.corp.adobe.com/abramowi/hyperion/lib/dockerswarm"
+	"git.corp.adobe.com/abramowi/hyperion/lib/kubernetes"
+	"git.corp.adobe.com/abramowi/hyperion/lib/marathon"
+	"git.corp.adobe.com/abramowi/hyperion/lib/nomad"
 )
 
 type AppDeployerConfig struct {
