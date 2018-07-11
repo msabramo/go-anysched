@@ -22,7 +22,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var appID string
+var appID string // app ID of app we are going to destroy
 
 // destroyAppCmd represents the destroyApp command
 var destroyAppCmd = &cobra.Command{
@@ -30,8 +30,7 @@ var destroyAppCmd = &cobra.Command{
 	Short: "Destroy an application",
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
-		appDeployer := GetAppDeployer()
-		operation, err := appDeployer.DestroyApp(appID)
+		operation, err := Manager().DestroyApp(appID)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error: %s\n", err)
 		}

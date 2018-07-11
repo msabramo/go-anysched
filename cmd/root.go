@@ -15,16 +15,12 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 	"os"
-	"time"
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-
-	hyperionlib "git.corp.adobe.com/abramowi/hyperion/lib"
 )
 
 var cfgFile string
@@ -79,39 +75,4 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
-}
-
-func GetAppDeployer() hyperionlib.AppDeployer {
-	appDeployerConfig := hyperionlib.AppDeployerConfig{
-		Type:    hyperionlib.AppDeployerTypeKubernetes,
-		Address: "kubeconfig",
-	}
-	// or alternatively one of the following:
-	//
-	// appDeployerConfig := AppDeployerConfig{
-	// 	Type:    hyperionlib.AppDeployerTypeMarathon,
-	// 	Address: "http://127.0.0.1:8080",
-	// }
-	// appDeployerConfig := AppDeployerConfig{
-	// 	Type:    hyperionlib.AppDeployerTypeDockerSwarm,
-	// 	Address: "http://127.0.0.1:2377",
-	// }
-	// appDeployerConfig := AppDeployerConfig{
-	// 	Type:    hyperionlib.AppDeployerTypeNomad
-	// 	Address: "http://127.0.0.1:4646",
-	// }
-
-	appDeployer, err := hyperionlib.NewAppDeployer(appDeployerConfig)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "error: %s\n", err)
-		os.Exit(1)
-	}
-	return appDeployer
-}
-
-func WaitForCompletion(ctx context.Context, operation hyperionlib.Operation) error {
-	if asyncOperation, ok := operation.(hyperionlib.AsyncOperation); ok && asyncOperation != nil {
-		return asyncOperation.Wait(ctx, 15*time.Second)
-	}
-	return nil
 }

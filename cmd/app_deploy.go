@@ -32,8 +32,7 @@ var deployAppCmd = &cobra.Command{
 	Short: "Deploy an application",
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
-		appDeployer := GetAppDeployer()
-		operation, err := appDeployer.DeployApp(app)
+		operation, err := Manager().DeployApp(app)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "DeployApp error: %s\n", err)
 		}

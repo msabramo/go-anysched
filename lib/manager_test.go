@@ -26,8 +26,8 @@ var _ = Describe("app.go", func() {
 
 	Describe("MarathonManager.CreateApplication", func() {
 		It("deploys an application to Marathon", func() {
-			appDeployer, err := NewAppDeployer(
-				AppDeployerConfig{
+			manager, err := NewManager(
+				ManagerConfig{
 					Type:    "marathon",
 					Address: "http://127.0.0.1:8080",
 				},
@@ -38,7 +38,7 @@ var _ = Describe("app.go", func() {
 				Image: "citizenstig/httpbin:latest",
 				Count: 2,
 			}
-			operation, err := appDeployer.DeployApp(app)
+			operation, err := manager.DeployApp(app)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(operation).ToNot(BeNil())
 
@@ -48,7 +48,7 @@ var _ = Describe("app.go", func() {
 
 			time.Sleep(10 * time.Second)
 
-			destroyOperation, err := appDeployer.DestroyApp("my-app")
+			destroyOperation, err := manager.DestroyApp("my-app")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(destroyOperation).ToNot(BeNil())
 		})
