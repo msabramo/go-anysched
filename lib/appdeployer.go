@@ -3,7 +3,6 @@ package hyperion
 import (
 	"fmt"
 
-	"git.corp.adobe.com/abramowi/hyperion/lib/core"
 	"git.corp.adobe.com/abramowi/hyperion/lib/dockerswarm"
 	"git.corp.adobe.com/abramowi/hyperion/lib/kubernetes"
 	"git.corp.adobe.com/abramowi/hyperion/lib/marathon"
@@ -28,8 +27,8 @@ type AppDeployerConfig struct {
 }
 
 type AppDeployer interface {
-	DeployApp(core.App) (core.Operation, error)
-	DestroyApp(appID string) (core.Operation, error)
+	DeployApp(App) (Operation, error)
+	DestroyApp(appID string) (Operation, error)
 }
 
 func NewAppDeployer(a AppDeployerConfig) (appDeployer AppDeployer, err error) {
