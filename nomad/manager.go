@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/nomad/api"
 	"github.com/pkg/errors"
 
-	"git.corp.adobe.com/abramowi/hyperion/lib/core"
+	"git.corp.adobe.com/abramowi/hyperion/core"
 )
 
 var ctx = context.TODO()

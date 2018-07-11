@@ -9,7 +9,7 @@ import (
 	dockerclient "github.com/docker/docker/client"
 	"github.com/pkg/errors"
 
-	"git.corp.adobe.com/abramowi/hyperion/lib/core"
+	"git.corp.adobe.com/abramowi/hyperion/core"
 )
 
 var ctx = context.TODO()

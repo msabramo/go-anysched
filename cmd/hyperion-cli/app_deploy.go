@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package cmd
+package main
 
 import (
 	"context"
@@ -21,10 +21,10 @@ import (
 
 	"github.com/spf13/cobra"
 
-	hyperionlib "git.corp.adobe.com/abramowi/hyperion/lib"
+	"git.corp.adobe.com/abramowi/hyperion"
 )
 
-var app hyperionlib.App
+var app hyperion.App
 
 // deployAppCmd represents the deployApp command
 var deployAppCmd = &cobra.Command{

@@ -4,7 +4,7 @@ import (
 	goMarathon "github.com/gambol99/go-marathon"
 	"github.com/pkg/errors"
 
-	"git.corp.adobe.com/abramowi/hyperion/lib/core"
+	"git.corp.adobe.com/abramowi/hyperion/core"
 )
 
 type manager struct {

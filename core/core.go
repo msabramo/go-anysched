@@ -5,6 +5,12 @@ import (
 	"time"
 )
 
+type App struct {
+	ID    string
+	Image string
+	Count int
+}
+
 type Operation interface{}
 
 type AsyncOperation interface {

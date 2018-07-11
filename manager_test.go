@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"git.corp.adobe.com/abramowi/hyperion/lib/core"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -33,7 +32,7 @@ var _ = Describe("app.go", func() {
 				},
 			)
 			Expect(err).ToNot(HaveOccurred())
-			app := core.App{
+			app := App{
 				ID:    "my-app",
 				Image: "citizenstig/httpbin:latest",
 				Count: 2,
@@ -42,7 +41,7 @@ var _ = Describe("app.go", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(operation).ToNot(BeNil())
 
-			if asyncOperation, ok := operation.(core.AsyncOperation); ok && asyncOperation != nil {
+			if asyncOperation, ok := operation.(AsyncOperation); ok && asyncOperation != nil {
 				asyncOperation.Wait(ctx, 60*time.Second)
 			}
 

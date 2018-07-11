@@ -18,8 +18,8 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
-	"git.corp.adobe.com/abramowi/hyperion/lib/core"
-	"git.corp.adobe.com/abramowi/hyperion/lib/utils"
+	"git.corp.adobe.com/abramowi/hyperion/core"
+	"git.corp.adobe.com/abramowi/hyperion/utils"
 )
 
 type manager struct {

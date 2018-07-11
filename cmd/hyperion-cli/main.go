@@ -14,10 +14,6 @@
 
 package main
 
-import (
-	"git.corp.adobe.com/abramowi/hyperion/cmd"
-)
-
 func main() {
-	cmd.Execute()
+	Execute()
 }
