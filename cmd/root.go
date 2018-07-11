@@ -82,20 +82,22 @@ func initConfig() {
 }
 
 func GetAppDeployer() hyperionlib.AppDeployer {
-	// appDeployerConfig := AppDeployerConfig{
-	// 	Type:    "marathon",
-	// 	Address: "http://127.0.0.1:8080",
-	// }
 	appDeployerConfig := hyperionlib.AppDeployerConfig{
-		Type:    "kubernetes",
+		Type:    hyperionlib.AppDeployerTypeKubernetes,
 		Address: "kubeconfig",
 	}
+	// or alternatively one of the following:
+	//
 	// appDeployerConfig := AppDeployerConfig{
-	// 	Type:    "dockerswarm",
+	// 	Type:    hyperionlib.AppDeployerTypeMarathon,
+	// 	Address: "http://127.0.0.1:8080",
+	// }
+	// appDeployerConfig := AppDeployerConfig{
+	// 	Type:    hyperionlib.AppDeployerTypeDockerSwarm,
 	// 	Address: "http://127.0.0.1:2377",
 	// }
 	// appDeployerConfig := AppDeployerConfig{
-	// 	Type:    "nomad",
+	// 	Type:    hyperionlib.AppDeployerTypeNomad
 	// 	Address: "http://127.0.0.1:4646",
 	// }
 
