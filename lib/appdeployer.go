@@ -20,6 +20,13 @@ const (
 	AppDeployerTypeNomad       AppDeployerType = "nomad"
 )
 
+var AppDeployerTypes = [...]AppDeployerType{
+	AppDeployerTypeMarathon,
+	AppDeployerTypeKubernetes,
+	AppDeployerTypeDockerSwarm,
+	AppDeployerTypeNomad,
+}
+
 // AppDeployerConfig contains config passed to the NewAppDeployer function
 type AppDeployerConfig struct {
 	Type    AppDeployerType // e.g.: "marathon", "kubernetes", etc.
@@ -42,6 +49,6 @@ func NewAppDeployer(a AppDeployerConfig) (appDeployer AppDeployer, err error) {
 	case AppDeployerTypeNomad:
 		return nomad.NewManager(a.Address)
 	default:
-		return nil, fmt.Errorf("Unknown type: %q", a.Type)
+		return nil, fmt.Errorf("Unknown app manager type: %q. Valid options are: %+v", a.Type, AppDeployerTypes)
 	}
 }
