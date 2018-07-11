@@ -24,12 +24,10 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	. "git.corp.adobe.com/abramowi/hyperion/lib"
-	. "git.corp.adobe.com/abramowi/hyperion/lib/core"
+	hyperionlib "git.corp.adobe.com/abramowi/hyperion/lib"
 )
 
 var cfgFile string
-var appID string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -83,20 +81,12 @@ func initConfig() {
 	}
 }
 
-func GetApp(appID string) App {
-	return App{
-		ID:    appID,
-		Image: "citizenstig/httpbin:latest",
-		Count: 2,
-	}
-}
-
-func GetAppDeployer() AppDeployer {
+func GetAppDeployer() hyperionlib.AppDeployer {
 	// appDeployerConfig := AppDeployerConfig{
 	// 	Type:    "marathon",
 	// 	Address: "http://127.0.0.1:8080",
 	// }
-	appDeployerConfig := AppDeployerConfig{
+	appDeployerConfig := hyperionlib.AppDeployerConfig{
 		Type:    "kubernetes",
 		Address: "kubeconfig",
 	}
@@ -109,7 +99,7 @@ func GetAppDeployer() AppDeployer {
 	// 	Address: "http://127.0.0.1:4646",
 	// }
 
-	appDeployer, err := NewAppDeployer(appDeployerConfig)
+	appDeployer, err := hyperionlib.NewAppDeployer(appDeployerConfig)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error: %s\n", err)
 		os.Exit(1)
@@ -117,8 +107,8 @@ func GetAppDeployer() AppDeployer {
 	return appDeployer
 }
 
-func WaitForCompletion(ctx context.Context, operation Operation) error {
-	if asyncOperation, ok := operation.(AsyncOperation); ok && asyncOperation != nil {
+func WaitForCompletion(ctx context.Context, operation hyperionlib.Operation) error {
+	if asyncOperation, ok := operation.(hyperionlib.AsyncOperation); ok && asyncOperation != nil {
 		return asyncOperation.Wait(ctx, 15*time.Second)
 	}
 	return nil

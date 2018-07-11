@@ -13,7 +13,7 @@ type deployment struct {
 
 func (dep deployment) String() string {
 	return fmt.Sprintf(
-		"<k8sDeployment name=%q uid=%q creationTimestamp=%q />",
+		"<kubernetes.deployment name=%q uid=%q creationTimestamp=%q />",
 		dep.Name(), dep.UID(), dep.CreationTimestamp(),
 	)
 }

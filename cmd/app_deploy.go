@@ -20,7 +20,11 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+
+	hyperionlib "git.corp.adobe.com/abramowi/hyperion/lib"
 )
+
+var app hyperionlib.App
 
 // deployAppCmd represents the deployApp command
 var deployAppCmd = &cobra.Command{
@@ -29,7 +33,6 @@ var deployAppCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
 		appDeployer := GetAppDeployer()
-		app := GetApp(appID)
 		operation, err := appDeployer.DeployApp(app)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "DeployApp error: %s\n", err)
@@ -53,5 +56,7 @@ func init() {
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	deployAppCmd.Flags().StringVarP(&appID, "app-id", "a", "", "app-id for new Marathon app")
+	deployAppCmd.Flags().StringVarP(&app.ID, "app-id", "a", "", "app-id for new app")
+	deployAppCmd.Flags().StringVarP(&app.Image, "image", "i", "", "Docker image for new app")
+	deployAppCmd.Flags().IntVarP(&app.Count, "count", "c", 1, "Number of containers to run")
 }

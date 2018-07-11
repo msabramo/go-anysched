@@ -5,36 +5,40 @@ Experimental Go library for abstracting out "deployment engines" like Marathon, 
 ## Example usage
 
 ```go
-// appDeployerConfig := AppDeployerConfig{
-// 	Type:    "marathon",
-// 	Address: "http://127.0.0.1:8080",
-// }
-appDeployerConfig := AppDeployerConfig{
+import (
+	hyperionlib "git.corp.adobe.com/abramowi/hyperion/lib"
+)
+
+appDeployerConfig := hyperionlib.AppDeployerConfig{
 	Type:    "kubernetes",
 	Address: "kubeconfig",
 }
-// appDeployerConfig := AppDeployerConfig{
+// or alternatively one of the following:
+//
+// appDeployerConfig := hyperionlib.AppDeployerConfig{
+// 	Type:    "marathon",
+// 	Address: "http://127.0.0.1:8080",
+// }
+// appDeployerConfig := hyperionlib.AppDeployerConfig{
 // 	Type:    "dockerswarm",
 // 	Address: "http://127.0.0.1:2377",
 // }
-// appDeployerConfig := AppDeployerConfig{
+// appDeployerConfig := hyperionlib.AppDeployerConfig{
 // 	Type:    "nomad",
 // 	Address: "http://127.0.0.1:4646",
 // }
 
-appDeployer, err := NewAppDeployer(appDeployerConfig)
+appDeployer, err := hyperionlib.NewAppDeployer(appDeployerConfig)
 if err != nil {
-	fmt.Fprintf(os.Stderr, "error: %s\n", err)
-	os.Exit(1)
+	return err
 }
-app := GetApp(appID)
+app := hyperionlib.App{
+	ID:    "my-app-id",
+	Image: "citizenstig/httpbin",
+	Count: 4,
+}
 operation, err := appDeployer.DeployApp(app)
 if err != nil {
-	fmt.Fprintf(os.Stderr, "DeployApp error: %s\n", err)
-}
-fmt.Printf("operation = %+v\n", operation)
-err = WaitForCompletion(ctx, operation)
-if err != nil {
-	fmt.Fprintf(os.Stderr, "WaitForCompletion error: %s\n", err)
+	return err
 }
 ```

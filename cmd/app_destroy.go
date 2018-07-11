@@ -22,6 +22,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var appID string
+
 // destroyAppCmd represents the destroyApp command
 var destroyAppCmd = &cobra.Command{
 	Use:   "destroy",
