@@ -15,18 +15,13 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"os"
 
 	"git.corp.adobe.com/abramowi/hyperion"
 	"github.com/spf13/cobra"
-	yaml "gopkg.in/yaml.v2"
-)
-
-var (
-	outputFormat string
+	"github.com/spf13/viper"
 )
 
 var listTasksCmd = &cobra.Command{
@@ -39,7 +34,7 @@ var listTasksCmd = &cobra.Command{
 			fmt.Fprintf(os.Stderr, "task list: AllTasks error: %s\n", err)
 			return
 		}
-		err = output(os.Stdout, tasks, outputFormat)
+		err = output(os.Stdout, tasks, viper.GetString("output_format"), outputTaskListTable)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "task list: output error: %s\n", err)
 			return
@@ -47,38 +42,8 @@ var listTasksCmd = &cobra.Command{
 	},
 }
 
-func output(w io.Writer, data interface{}, format string) error {
-	switch format {
-	case "yaml":
-		return outputYAML(w, data)
-	case "json":
-		return outputJSON(w, data)
-	case "table":
-		return outputTable(w, data.([]hyperion.TaskInfo))
-	default:
-		return fmt.Errorf("unknown output format type: %q", format)
-	}
-}
-
-func outputYAML(w io.Writer, data interface{}) error {
-	bytes, err := yaml.Marshal(data)
-	if err != nil {
-		return err
-	}
-	w.Write(bytes)
-	return nil
-}
-
-func outputJSON(w io.Writer, data interface{}) error {
-	bytes, err := json.Marshal(data)
-	if err != nil {
-		return err
-	}
-	w.Write(bytes)
-	return nil
-}
-
-func outputTable(w io.Writer, tasks []hyperion.TaskInfo) error {
+func outputTaskListTable(w io.Writer, data interface{}) error {
+	tasks := data.([]hyperion.TaskInfo)
 	for _, task := range tasks {
 		fmt.Fprintf(w, "%-40s %-16s %-16s %s\n", task.Name, task.HostIP, task.TaskIP, task.ReadyTime)
 	}
@@ -88,6 +53,6 @@ func outputTable(w io.Writer, tasks []hyperion.TaskInfo) error {
 func init() {
 	taskCmd.AddCommand(listTasksCmd)
 
-	listTasksCmd.Flags().StringVarP(&outputFormat, "output-format", "f", "table",
-		`output format: "table", "yaml", "json"`)
+	listTasksCmd.Flags().StringP("output-format", "f", "table", `output format: "table", "yaml", "json"`)
+	viper.BindPFlag("output_format", listTasksCmd.Flags().Lookup("output-format"))
 }

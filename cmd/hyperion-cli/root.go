@@ -48,7 +48,7 @@ func init() {
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.hyperionapp.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.hyperion-cli.yaml)")
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -66,9 +66,10 @@ func initConfig() {
 
 		// Search config in home directory with name ".hyperionapp" (without extension).
 		viper.AddConfigPath(home)
-		viper.SetConfigName(".hyperionapp")
+		viper.SetConfigName(".hyperion-cli")
 	}
 
+	viper.SetEnvPrefix("HYPERIONCLI")
 	viper.AutomaticEnv() // read in environment variables that match
 
 	// If a config file is found, read it in.
