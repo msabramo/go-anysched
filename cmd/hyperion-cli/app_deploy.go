@@ -18,29 +18,78 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/spf13/cobra"
 
 	"git.corp.adobe.com/abramowi/hyperion"
 )
 
-var app hyperion.App
+var (
+	deploySettings = struct{ app hyperion.App }{}
+)
 
 // deployAppCmd represents the deployApp command
 var deployAppCmd = &cobra.Command{
 	Use:   "deploy",
 	Short: "Deploy an application",
 	Run: func(cmd *cobra.Command, args []string) {
-		ctx := context.Background()
-		operation, err := Manager().DeployApp(app)
+		ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+		defer cancel()
+		startTime := time.Now()
+		manager := Manager()
+		deployment, err := manager.DeployApp(deploySettings.app)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "DeployApp error: %s\n", err)
+			return
 		}
-		fmt.Printf("operation = %+v\n", operation)
-		err = WaitForCompletion(ctx, operation)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "WaitForCompletion error: %s\n", err)
+		for key, val := range deployment.GetProperties() {
+			if key == "" || val == "" {
+				continue
+			}
+			fmt.Printf("%-30s : %v\n", key, val)
 		}
+		fmt.Println()
+
+		var lastUpdateTime time.Time
+
+		for {
+			select {
+			case <-ctx.Done():
+				fmt.Fprintf(os.Stderr, "Deployment polling error: %s\n", ctx.Err())
+				return
+			case <-time.After(1 * time.Second):
+				status, err := deployment.GetStatus()
+				if err != nil {
+					fmt.Fprintf(os.Stderr, "GetStatus error: %s\n", err)
+					continue
+				}
+				if status.LastUpdateTime == lastUpdateTime {
+					continue
+				}
+				fmt.Printf("[%s] %s\n", status.LastUpdateTime.Format(time.RFC3339), status.Msg)
+				lastUpdateTime = status.LastUpdateTime
+				if status.Done {
+					elapsedTime := time.Since(startTime)
+					fmt.Printf("Deployment completed in %s\n", elapsedTime)
+					pods, err := manager.GetPods(deploySettings.app)
+					if err != nil {
+						fmt.Fprintf(os.Stderr, "GetPods error: %s\n", err)
+						continue
+					}
+					for _, pod := range pods {
+						fmt.Printf("%-40s %-16s %-16s %s\n", pod["name"], pod["hostIP"], pod["podIP"], pod["readyTime"])
+					}
+					return
+				}
+			}
+		}
+		/*
+			_, err = deployment.Wait(ctx)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Deployment failed: %s\n", err)
+			}
+		*/
 	},
 }
 
@@ -55,7 +104,8 @@ func init() {
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	deployAppCmd.Flags().StringVarP(&app.ID, "app-id", "a", "", "app-id for new app")
-	deployAppCmd.Flags().StringVarP(&app.Image, "image", "i", "", "Docker image for new app")
-	deployAppCmd.Flags().IntVarP(&app.Count, "count", "c", 1, "Number of containers to run")
+	deployAppCmd.Flags().StringVarP(&deploySettings.app.ID, "app-id", "a", "", "app-id for new app")
+	deployAppCmd.Flags().StringVarP(&deploySettings.app.Image, "image", "i", "", "Docker image for new app")
+	deployAppCmd.Flags().IntVarP(&deploySettings.app.Count, "count", "c", 1, "Number of containers to run")
+	deployAppCmd.Flags().DurationVarP(&timeoutDuration, "timeout", "t", timeoutDuration, "Max time to wait for deploy to complete")
 }

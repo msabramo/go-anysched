@@ -27,6 +27,11 @@ func NewManager(url string) (*manager, error) {
 	return &manager{client: client, url: url}, nil
 }
 
+// GetPods returns info about the running pods for an app
+func (mgr *manager) GetPods(app core.App) (results []map[string]interface{}, err error) {
+	return nil, errors.New("dockerswarm.manager.GetPods: Not implemented")
+}
+
 func (mgr *manager) DeployApp(app core.App) (core.Operation, error) {
 	count := uint64(app.Count)
 	service := swarm.ServiceSpec{

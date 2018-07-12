@@ -1,10 +1,8 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"os"
-	"time"
 
 	"git.corp.adobe.com/abramowi/hyperion"
 )
@@ -32,11 +30,4 @@ func Manager() hyperion.Manager {
 		os.Exit(1)
 	}
 	return manager
-}
-
-func WaitForCompletion(ctx context.Context, operation hyperion.Operation) error {
-	if asyncOperation, ok := operation.(hyperion.AsyncOperation); ok && asyncOperation != nil {
-		return asyncOperation.Wait(ctx, 15*time.Second)
-	}
-	return nil
 }

@@ -12,7 +12,6 @@ import (
 
 type App = core.App
 type Operation = core.Operation
-type AsyncOperation = core.AsyncOperation
 
 // ManagerType represents the type of system we're managing apps on -- e.g.:
 // Marathon, Kubernetes, etc.
@@ -38,6 +37,11 @@ type ManagerConfig struct {
 	Address string      // e.g.: "http://127.0.0.1:8080"
 }
 
+type PodGetter interface {
+	// GetPods returns info about the running pods for an app
+	GetPods(app core.App) (results []map[string]interface{}, err error)
+}
+
 type Deployer interface {
 	DeployApp(App) (Operation, error)
 }
@@ -47,6 +51,7 @@ type Destroyer interface {
 }
 
 type Manager interface {
+	PodGetter
 	Deployer
 	Destroyer
 }

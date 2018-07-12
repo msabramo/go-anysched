@@ -31,6 +31,11 @@ func Sptr(s string) *string {
 	return &s
 }
 
+// GetPods returns info about the running pods for an app
+func (mgr *manager) GetPods(app core.App) (results []map[string]interface{}, err error) {
+	return nil, errors.New("nomadmanager.manager.GetPods: Not implemented")
+}
+
 func (mgr *manager) DeployApp(app core.App) (core.Operation, error) {
 	job := getJob(app)
 	jobRegisterResponse, writeMeta, err := mgr.jobsClient.Register(job, &api.WriteOptions{})

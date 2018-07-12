@@ -18,11 +18,15 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/spf13/cobra"
 )
 
-var appID string // app ID of app we are going to destroy
+var (
+	appID           string // app ID of app we are going to destroy
+	timeoutDuration = 15 * time.Second
+)
 
 // destroyAppCmd represents the destroyApp command
 var destroyAppCmd = &cobra.Command{
@@ -33,11 +37,16 @@ var destroyAppCmd = &cobra.Command{
 		operation, err := Manager().DestroyApp(appID)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error: %s\n", err)
+			return
 		}
-		fmt.Printf("operation = %+v\n", operation)
-		err = WaitForCompletion(ctx, operation)
+		if operation == nil {
+			fmt.Printf("App %q deleted.\n", appID)
+			return
+		}
+		_, err = operation.Wait(ctx)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error: %s\n", err)
+			return
 		}
 	},
 }
@@ -54,4 +63,6 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	destroyAppCmd.Flags().StringVarP(&appID, "app-id", "a", "", "app-id for new Marathon app")
+	destroyAppCmd.Flags().DurationVarP(&timeoutDuration, "timeout", "t", timeoutDuration, "Max time to wait for deploy to complete")
+
 }
