@@ -21,6 +21,16 @@ type Status struct {
 	Done               bool
 }
 
+type TaskInfo struct {
+	Name                string     `yaml:"name" json:"name"`
+	HostIP              string     `yaml:"host-ip,omitempty" json:"host,omitempty"`
+	TaskIP              string     `yaml:"task-ip,omitempty" json:"task-ip,omitempty"`
+	StartTime           *time.Time `yaml:"start-time,omitempty" json:"start-time,omitempty"`
+	ReadyTime           *time.Time `yaml:"ready-time,omitempty" json:"ready-time,omitempty"`
+	LastHealthCheckTime *time.Time `yaml:"last-health-check-time,omitempty" json:"last-health-check-time,omitempty"`
+	LastHealthyTime     *time.Time `yaml:"last-healthy-time,omitempty" json:"last-healthy-time,omitempty"`
+}
+
 type Operation interface {
 	// GetProperties returns a map with all labels, annotations, and basic
 	// properties like name or uid

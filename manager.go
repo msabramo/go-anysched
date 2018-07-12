@@ -12,6 +12,7 @@ import (
 
 type App = core.App
 type Operation = core.Operation
+type TaskInfo = core.TaskInfo
 
 // ManagerType represents the type of system we're managing apps on -- e.g.:
 // Marathon, Kubernetes, etc.
@@ -37,9 +38,14 @@ type ManagerConfig struct {
 	Address string      // e.g.: "http://127.0.0.1:8080"
 }
 
-type PodGetter interface {
-	// GetPods returns info about the running pods for an app
-	GetPods(app core.App) (results []map[string]interface{}, err error)
+type AppTasksGetter interface {
+	// AppTasks returns info about the running tasks for an app
+	AppTasks(app core.App) (results []TaskInfo, err error)
+}
+
+type AllTasksGetter interface {
+	// AllTasks returns info about all running tasks
+	AllTasks() (results []TaskInfo, err error)
 }
 
 type Deployer interface {
@@ -51,7 +57,8 @@ type Destroyer interface {
 }
 
 type Manager interface {
-	PodGetter
+	AllTasksGetter
+	AppTasksGetter
 	Deployer
 	Destroyer
 }

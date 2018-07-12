@@ -72,13 +72,13 @@ var deployAppCmd = &cobra.Command{
 				if status.Done {
 					elapsedTime := time.Since(startTime)
 					fmt.Printf("Deployment completed in %s\n", elapsedTime)
-					pods, err := manager.GetPods(deploySettings.app)
+					tasks, err := manager.AppTasks(deploySettings.app)
 					if err != nil {
-						fmt.Fprintf(os.Stderr, "GetPods error: %s\n", err)
+						fmt.Fprintf(os.Stderr, "app deploy: AppTasks error: %s\n", err)
 						continue
 					}
-					for _, pod := range pods {
-						fmt.Printf("%-40s %-16s %-16s %s\n", pod["name"], pod["hostIP"], pod["podIP"], pod["readyTime"])
+					for _, task := range tasks {
+						fmt.Printf("%-40s %-16s %-16s %s\n", task.Name, task.HostIP, task.TaskIP, task.ReadyTime)
 					}
 					return
 				}

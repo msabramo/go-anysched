@@ -85,32 +85,52 @@ func getDefaultKubeconfigFilePath(homeDirPath string) string {
 	return ""
 }
 
-// GetPods returns info about the running pods for an app
-func (mgr *manager) GetPods(app core.App) (results []map[string]interface{}, err error) {
-	podList, err := mgr.podsClient.List(metav1.ListOptions{
-		LabelSelector: "appID=" + app.ID,
-	})
+// AllPods returns info about all running tasks
+func (mgr *manager) AllTasks() (results []core.TaskInfo, err error) {
+	podList, err := mgr.podsClient.List(metav1.ListOptions{})
 	if err != nil {
-		return nil, errors.Wrap(err, "kubernetes.manager.GetPods: podsClient.List failed")
+		return nil, errors.Wrap(err, "kubernetes.manager.AllPods: podsClient.List failed")
 	}
-	results = make([]map[string]interface{}, len(podList.Items))
+	results = make([]core.TaskInfo, len(podList.Items))
+	for i := range podList.Items {
+		pod := podList.Items[i]
+		// fmt.Printf("*** pod = %+v\n", pod)
+		cond := getPodCondition(pod.Status, apiv1.PodReady)
+		if cond == nil {
+			continue
+		}
+		results[i] = core.TaskInfo{
+			Name:      pod.GetName(),
+			HostIP:    pod.Status.HostIP,
+			TaskIP:    pod.Status.PodIP,
+			ReadyTime: &cond.LastTransitionTime.Time,
+		}
+	}
+	return results, nil
+}
+
+// AppTasks returns info about the running tasks for an app
+func (mgr *manager) AppTasks(app core.App) (results []core.TaskInfo, err error) {
+	podList, err := mgr.podsClient.List(metav1.ListOptions{LabelSelector: "appID=" + app.ID})
+	if err != nil {
+		return nil, errors.Wrap(err, "kubernetes.manager.AppTasks: podsClient.List failed")
+	}
+	results = make([]core.TaskInfo, len(podList.Items))
 	for i := range podList.Items {
 		pod := podList.Items[i]
 		cond := getPodCondition(pod.Status, apiv1.PodReady)
 		if cond == nil {
 			continue
 		}
-		// fmt.Printf("*** GetPods: Name = %+v; HostIP = %+v; PodIP = %+v; ReadyTime = %+v\n",
-		// 	pod.GetName(), pod.Status.HostIP, pod.Status.PodIP, cond.LastTransitionTime)
-		results[i] = map[string]interface{}{
-			"name":      pod.GetName(),
-			"hostIP":    pod.Status.HostIP,
-			"podIP":     pod.Status.PodIP,
-			"readyTime": cond.LastTransitionTime,
+		results[i] = core.TaskInfo{
+			Name:      pod.GetName(),
+			HostIP:    pod.Status.HostIP,
+			TaskIP:    pod.Status.PodIP,
+			ReadyTime: &cond.LastTransitionTime.Time,
 		}
 	}
 	sort.Slice(results, func(i, j int) bool {
-		return results[i]["readyTime"].(metav1.Time).Time.Before(results[j]["readyTime"].(metav1.Time).Time)
+		return results[i].ReadyTime != nil && results[j].ReadyTime != nil && results[i].ReadyTime.Before(*results[j].ReadyTime)
 	})
 	return results, nil
 }

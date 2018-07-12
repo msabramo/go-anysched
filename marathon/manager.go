@@ -25,9 +25,14 @@ func NewManager(url string) (*manager, error) {
 	return mgr, nil
 }
 
-// GetPods returns info about the running pods for an app
-func (mgr *manager) GetPods(app core.App) (results []map[string]interface{}, err error) {
-	return nil, errors.New("marathon.manager.GetPods: Not implemented")
+// AppTasks returns info about the running tasks for an app
+func (mgr *manager) AppTasks(app core.App) (results []core.TaskInfo, err error) {
+	return nil, errors.New("marathon.manager.AppTasks: Not implemented")
+}
+
+// AllTasks returns info about all running tasks
+func (mgr *manager) AllTasks() (results []core.TaskInfo, err error) {
+	return nil, errors.New("marathon.manager.AllTasks: Not implemented")
 }
 
 func (mgr *manager) DeployApp(app core.App) (core.Operation, error) {
