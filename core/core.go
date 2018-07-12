@@ -23,12 +23,20 @@ type Status struct {
 
 type TaskInfo struct {
 	Name                string     `yaml:"name" json:"name"`
+	AppID               string     `yaml:"app-id,omitempty" json:"app-id,omitempty"`
+	HostName            string     `yaml:"host-name,omitempty" json:"host-name,omitempty"`
 	HostIP              string     `yaml:"host-ip,omitempty" json:"host,omitempty"`
 	TaskIP              string     `yaml:"task-ip,omitempty" json:"task-ip,omitempty"`
+	IPAddresses         []string   `yaml:"ip-addresses,omitempty" json:"ip-addresses,omitempty"`
+	Ports               []int      `yaml:"ports,omitempty" json:"ports,omitempty"`
+	ServicePorts        []int      `yaml:"service-ports,omitempty" json:"service-ports,omitempty"`
+	MesosSlaveID        string     `yaml:"mesos-slave-id,omitempty" json:"mesos-slave-id,omitempty"`
 	StartTime           *time.Time `yaml:"start-time,omitempty" json:"start-time,omitempty"`
 	ReadyTime           *time.Time `yaml:"ready-time,omitempty" json:"ready-time,omitempty"`
 	LastHealthCheckTime *time.Time `yaml:"last-health-check-time,omitempty" json:"last-health-check-time,omitempty"`
 	LastHealthyTime     *time.Time `yaml:"last-healthy-time,omitempty" json:"last-healthy-time,omitempty"`
+	State               string     `yaml:"state,omitempty" json:"state,omitempty"`
+	Version             string     `yaml:"version,omitempty" json:"version,omitempty"`
 }
 
 type Operation interface {

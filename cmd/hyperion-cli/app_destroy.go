@@ -34,7 +34,7 @@ var destroyAppCmd = &cobra.Command{
 	Short: "Destroy an application",
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
-		operation, err := Manager().DestroyApp(appID)
+		operation, err := getManager().DestroyApp(appID)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error: %s\n", err)
 			return

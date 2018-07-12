@@ -21,6 +21,8 @@ import (
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
+	"git.corp.adobe.com/abramowi/hyperion"
 )
 
 var cfgFile string
@@ -49,6 +51,8 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.hyperion-cli.yaml)")
+	rootCmd.PersistentFlags().StringP("env", "e", "", "environment to target")
+	viper.BindPFlag("env", rootCmd.PersistentFlags().Lookup("env"))
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -76,4 +80,34 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
+}
+
+func getManager() hyperion.Manager {
+	managerConfig := hyperion.ManagerConfig{Type: hyperion.ManagerTypeKubernetes}
+	// or alternatively one of the following:
+	//
+	// managerConfig := hyperonlib.ManagerConfig{
+	// 	Type:    hyperion.ManagerTypeMarathon,
+	// 	Address: "http://127.0.0.1:8080",
+	// }
+	// managerConfig := hyperonlib.ManagerConfig{
+	// 	Type:    hyperion.ManagerTypeDockerSwarm,
+	// 	Address: "http://127.0.0.1:2377",
+	// }
+	// managerConfig := hyperonlib.ManagerConfig{
+	// 	Type:    hyperion.ManagerTypeNomad
+	// 	Address: "http://127.0.0.1:4646",
+	// }
+
+	env := viper.GetString("env")
+	managerType := hyperion.ManagerType(viper.GetString(fmt.Sprintf("envs.%s.type", env)))
+	managerAddress := viper.GetString(fmt.Sprintf("envs.%s.address", env))
+	managerConfig = hyperion.ManagerConfig{Type: managerType, Address: managerAddress}
+
+	manager, err := hyperion.NewManager(managerConfig)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error: %s\n", err)
+		os.Exit(1)
+	}
+	return manager
 }

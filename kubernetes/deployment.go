@@ -21,7 +21,7 @@ const (
 var (
 	getDeployTimeoutDuration = func(app core.App) time.Duration {
 		if app.DeployTimeoutDuration == nil {
-			return 15 * time.Second
+			return 60 * time.Second
 		}
 		return *app.DeployTimeoutDuration
 	}

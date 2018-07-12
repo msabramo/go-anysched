@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -34,10 +35,10 @@ var deployAppCmd = &cobra.Command{
 	Use:   "deploy",
 	Short: "Deploy an application",
 	Run: func(cmd *cobra.Command, args []string) {
-		ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 		defer cancel()
 		startTime := time.Now()
-		manager := Manager()
+		manager := getManager()
 		deployment, err := manager.DeployApp(deploySettings.app)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "DeployApp error: %s\n", err)
@@ -62,6 +63,9 @@ var deployAppCmd = &cobra.Command{
 				status, err := deployment.GetStatus()
 				if err != nil {
 					fmt.Fprintf(os.Stderr, "GetStatus error: %s\n", err)
+					if strings.Contains(err.Error(), "Not implemented yet") {
+						return
+					}
 					continue
 				}
 				if status.LastUpdateTime == lastUpdateTime {

@@ -28,7 +28,7 @@ var listTasksCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List running tasks",
 	Run: func(cmd *cobra.Command, args []string) {
-		manager := Manager()
+		manager := getManager()
 		tasks, err := manager.AllTasks()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "task list: AllTasks error: %s\n", err)
@@ -53,6 +53,6 @@ func outputTaskListTable(w io.Writer, data interface{}) error {
 func init() {
 	taskCmd.AddCommand(listTasksCmd)
 
-	listTasksCmd.Flags().StringP("output-format", "f", "table", `output format: "table", "yaml", "json"`)
+	listTasksCmd.Flags().StringP("output-format", "f", "yaml", `output format: "table", "yaml", "json"`)
 	viper.BindPFlag("output_format", listTasksCmd.Flags().Lookup("output-format"))
 }
