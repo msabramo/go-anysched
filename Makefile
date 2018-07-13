@@ -50,9 +50,7 @@ lint: ## Run golint linter
 	golint $(shell go list ./...)
 
 vet: ## Run go vet linter
-	@if [ "`go vet | tee /dev/stderr`" ]; then \
-		echo "^ go vet errors!" && echo && exit 1; \
-	fi
+	go vet $(shell go list ./...)
 
 test-cover-html: ## Generate test coverage report
 	go test -coverprofile=coverage.out -covermode=count
