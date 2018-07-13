@@ -20,12 +20,20 @@ type TaskInfo = core.TaskInfo
 type ManagerType string
 
 const (
-	ManagerTypeMarathon    ManagerType = "marathon"
-	ManagerTypeKubernetes  ManagerType = "kubernetes"
+	// ManagerTypeMarathon is a const ManagerType (string) for Marathon.
+	ManagerTypeMarathon ManagerType = "marathon"
+
+	// ManagerTypeKubernetes is a const ManagerType (string) for Kubernetes.
+	ManagerTypeKubernetes ManagerType = "kubernetes"
+
+	// ManagerTypeDockerSwarm is a const ManagerType (string) for Docker Swarm.
 	ManagerTypeDockerSwarm ManagerType = "dockerswarm"
-	ManagerTypeNomad       ManagerType = "nomad"
+
+	// ManagerTypeNomad is a const ManagerType (string) for Nomad.
+	ManagerTypeNomad ManagerType = "nomad"
 )
 
+// ManagerTypes is a slice with valid manager types
 var ManagerTypes = [...]ManagerType{
 	ManagerTypeMarathon,
 	ManagerTypeKubernetes,
@@ -33,24 +41,25 @@ var ManagerTypes = [...]ManagerType{
 	ManagerTypeNomad,
 }
 
-// ManagerConfig contains config passed to the NewManager function
+// ManagerConfig is a struct containing configuration info that a user passes to
+// the NewManager function.
 type ManagerConfig struct {
 	Type    ManagerType // e.g.: "marathon", "kubernetes", etc.
 	Address string      // e.g.: "http://127.0.0.1:8080"
 }
 
 type AllAppsGetter interface {
-	// AllApps returns info about the running apps
+	// AllApps returns info about the running apps.
 	AllApps() (results []AppInfo, err error)
 }
 
 type AppTasksGetter interface {
-	// AppTasks returns info about the running tasks for an app
+	// AppTasks returns info about the running tasks for an app.
 	AppTasks(app core.App) (results []TaskInfo, err error)
 }
 
 type AllTasksGetter interface {
-	// AllTasks returns info about all running tasks
+	// AllTasks returns info about all running tasks.
 	AllTasks() (results []TaskInfo, err error)
 }
 
@@ -62,6 +71,8 @@ type Destroyer interface {
 	DestroyApp(appID string) (Operation, error)
 }
 
+// Manager is an interface that is composed of various other more fine-grained
+// interfaces.
 type Manager interface {
 	AllAppsGetter
 	AllTasksGetter
@@ -70,17 +81,23 @@ type Manager interface {
 	Destroyer
 }
 
-func NewManager(a ManagerConfig) (manager Manager, err error) {
-	switch a.Type {
+// NewManager takes a ManagerConfig and returns a specific type of Manager for
+// the scheduler that the user requested (e.g.: Kubernetes, Marathon, etc.).
+func NewManager(managerConfig ManagerConfig) (manager Manager, err error) {
+	switch managerConfig.Type {
 	case ManagerTypeMarathon:
-		return marathon.NewManager(a.Address)
+		return marathon.NewManager(managerConfig.Address)
 	case ManagerTypeKubernetes:
-		return kubernetes.NewManager(a.Address)
+		return kubernetes.NewManager(managerConfig.Address)
 	case ManagerTypeDockerSwarm:
-		return dockerswarm.NewManager(a.Address)
+		return dockerswarm.NewManager(managerConfig.Address)
 	case ManagerTypeNomad:
-		return nomad.NewManager(a.Address)
+		return nomad.NewManager(managerConfig.Address)
 	default:
-		return nil, fmt.Errorf("Unknown app manager type: %q. Valid options are: %+v", a.Type, ManagerTypes)
+		return nil, unknownAppManagerTypeError(managerConfig.Type)
 	}
+}
+
+func unknownAppManagerTypeError(appManagerType ManagerType) error {
+	return fmt.Errorf("Unknown app manager type: %q. Valid options are: %+v", appManagerType, ManagerTypes)
 }
