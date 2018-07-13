@@ -47,11 +47,7 @@ test-race: ## Run tests with race detector
 	go test -race ./...
 
 lint: ## Run golint linter
-	@for d in `go list` ; do \
-		if [ "`golint $$d | tee /dev/stderr`" ]; then \
-			echo "^ golint errors!" && echo && exit 1; \
-		fi \
-	done
+	golint $(shell go list ./...)
 
 vet: ## Run go vet linter
 	@if [ "`go vet | tee /dev/stderr`" ]; then \
