@@ -21,6 +21,17 @@ type marathonDeploymentOperation struct {
 // GetProperties returns a map with all labels, annotations, and basic
 // properties like name or uid
 func (d *marathonDeploymentOperation) GetProperties() (propertiesMap map[string]interface{}) {
+	propertiesMap = map[string]interface{}{}
+	if len(d.deploymentIDs) == 1 {
+		deploymentID := d.deploymentIDs[0]
+		propertiesMap["deploymentID"] = deploymentID
+		// deps, err := d.manager.goMarathonClient.Deployments()
+		// for i := range deps {
+		// 	dep := deps[i]
+		// 	if dep.ID == deploymentID {
+		// 	}
+		// }
+	}
 	return propertiesMap
 }
 
