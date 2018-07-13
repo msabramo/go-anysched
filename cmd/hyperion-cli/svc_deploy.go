@@ -35,7 +35,7 @@ var (
 // svcDeployCmd represents the "svc deploy" command
 var svcDeployCmd = &cobra.Command{
 	Use:   "deploy",
-	Short: "Deploy an application",
+	Short: "Deploy a service",
 	Run: func(cmd *cobra.Command, args []string) {
 		timeout := 60 * time.Second
 		ctx, cancel := context.WithTimeout(context.Background(), timeout)
@@ -45,7 +45,7 @@ var svcDeployCmd = &cobra.Command{
 		deployment, err := manager.DeploySvc(deploySettings.svcCfg)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "DeploySvc error: %s\n", err)
-			return
+			os.Exit(1)
 		}
 		for key, val := range deployment.GetProperties() {
 			if key == "" || val == "" {
@@ -86,11 +86,11 @@ var svcDeployCmd = &cobra.Command{
 						}
 						continue
 					}
-					fmt.Printf("Deployment completed in %s\n", elapsedTime)
+					fmt.Printf("Deployment completed in %s\n\n", elapsedTime)
 					err = output(os.Stdout, tasks, viper.GetString("output_format"), outputTaskListTable)
 					if err != nil {
 						fmt.Fprintf(os.Stderr, "app list: task list output error: %s\n", err)
-						return
+						os.Exit(1)
 					}
 					return
 				}

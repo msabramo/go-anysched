@@ -18,8 +18,24 @@ build: ## Build all the things
 	go build $(BINARY_PKGS)
 	CLICOLOR=1 ls -l $(BINARIES)
 
-cli-smoketest: ## Quickly exercise hyperion-cli
+cli-smoketest: ## Quickly exercise hyperion-cli for Marathon and Kubernetes
+	HYPERIONCLI_ENV=local_marathon $(MAKE) _cli-smoketest
+	@echo; echo
+	HYPERIONCLI_ENV=kubeconfig $(MAKE) _cli-smoketest
+
+_cli-smoketest:
+	@echo
+	@echo "--------------------------------------------------------------------------------"
+	@echo "Deploying service in $(HYPERIONCLI_ENV) ..."
+	@echo "--------------------------------------------------------------------------------"
+	@echo
 	$(HYPERION_CLI) svc deploy --svc-id=$(TEST_APP_NAME) --image=$(TEST_APP_IMAGE) --count=$(TEST_APP_COUNT)
+	@echo
+	@sleep 5
+	@echo "--------------------------------------------------------------------------------"
+	@echo "Destroying service in $(HYPERIONCLI_ENV) ..."
+	@echo "--------------------------------------------------------------------------------"
+	@echo
 	$(HYPERION_CLI) svc destroy --svc-id=$(TEST_APP_NAME)
 
 check: test-race vet lint ## Run tests and linters

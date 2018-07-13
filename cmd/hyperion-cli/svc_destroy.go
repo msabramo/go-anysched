@@ -29,23 +29,23 @@ var (
 // svcDestroyCmd represents the "svc destroy" command
 var svcDestroyCmd = &cobra.Command{
 	Use:   "destroy",
-	Short: "Destroy an application",
+	Short: "Destroy a service",
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
 		operation, err := getManager().DestroySvc(svcID)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "DestroySvc error: %s\n", err)
-			return
+			os.Exit(1)
 		}
-		if operation == nil {
-			fmt.Printf("Service %q deleted.\n", svcID)
-			return
+		if operation != nil {
+			_, err = operation.Wait(ctx)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "error: %s\n", err)
+				os.Exit(1)
+			}
 		}
-		_, err = operation.Wait(ctx)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "error: %s\n", err)
-			return
-		}
+		fmt.Printf("Service %q deleted.\n", svcID)
+		os.Exit(0)
 	},
 }
 

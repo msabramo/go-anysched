@@ -42,10 +42,6 @@
   version = "0.8.4"
 
 [[constraint]]
-  branch = "master"
-  name = "github.com/mitchellh/go-homedir"
-
-[[constraint]]
   name = "github.com/onsi/ginkgo"
   version = "1.5.0"
 

@@ -1,0 +1,18 @@
+# output_format: table
+# output_format: yaml
+
+env: local_marathon
+# env: kubeconfig
+
+envs:
+  kubeconfig:
+    type:    kubernetes
+    address: kubeconfig
+
+  local_marathon:
+    type:    marathon
+    address: http://127.0.0.1:8080
+
+  local_nomad:
+    type:    nomad
+    address: http://127.0.0.1:4646
