@@ -18,11 +18,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var appCmd = &cobra.Command{
-	Use:   "app",
-	Short: "Commands for managing apps",
+var svcCmd = &cobra.Command{
+	Use:   "svc",
+	Short: "Commands for managing services",
 }
 
 func init() {
-	rootCmd.AddCommand(appCmd)
+	rootCmd.AddCommand(svcCmd)
 }

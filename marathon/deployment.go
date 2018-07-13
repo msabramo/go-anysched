@@ -11,67 +11,71 @@ import (
 	"git.corp.adobe.com/abramowi/hyperion/core"
 )
 
-type marathonDeploymentOperation struct {
+type deployment struct {
 	*manager
-	appID           string
-	deploymentIDs   []string
-	timeoutDuration time.Duration
+	svcID                 string
+	marathonDeploymentIDs []string
+	timeoutDuration       time.Duration
 }
 
 // GetProperties returns a map with all labels, annotations, and basic
 // properties like name or uid
-func (d *marathonDeploymentOperation) GetProperties() (propertiesMap map[string]interface{}) {
+func (d *deployment) GetProperties() (propertiesMap map[string]interface{}) {
 	propertiesMap = map[string]interface{}{}
-	if len(d.deploymentIDs) == 1 {
-		deploymentID := d.deploymentIDs[0]
-		propertiesMap["deploymentID"] = deploymentID
-		// deps, err := d.manager.goMarathonClient.Deployments()
-		// for i := range deps {
-		// 	dep := deps[i]
-		// 	if dep.ID == deploymentID {
-		// 	}
-		// }
+	if len(d.marathonDeploymentIDs) == 1 {
+		marathonDeploymentID := d.marathonDeploymentIDs[0]
+		propertiesMap["marathonDeploymentID"] = marathonDeploymentID
 	}
 	return propertiesMap
 }
 
-func (d *marathonDeploymentOperation) GetStatus() (status *core.Status, err error) {
+func (d *deployment) GetStatus() (status *core.OperationStatus, err error) {
 	opts := &goMarathon.GetAppOpts{
 		Embed: []string{"app.tasks", "app.counts", "app.deployments", "app.readiness", "app.lastTaskFailure", "app.taskStats"},
 	}
-	app, err := d.manager.goMarathonClient.ApplicationBy(d.appID, opts)
+	goMarathonApp, err := d.manager.goMarathonClient.ApplicationBy(d.svcID, opts)
 	if err != nil {
-		return nil, errors.Wrapf(err,
-			"marathon.marathonDeploymentOperation.GetStatus: goMarathonClient.Application(%q) failed",
-			d.appID)
+		return nil, errors.Wrapf(err, "marathon.deployment.GetStatus: goMarathonClient.ApplicationBy(%q) failed", d.svcID)
 	}
-	// fmt.Printf("*** GetStatus: app = %+v\n", app)
-	if !app.AllTaskRunning() {
-		return &core.Status{
-			ClientTime: time.Now(),
-			// LastTransitionTime: lastTransitionTime,
-			LastUpdateTime: time.Now(),
-			Msg:            fmt.Sprintf("Not all tasks running. %d task(s) running.", app.TasksRunning),
-			Done:           false,
-		}, nil
+
+	if !goMarathonApp.AllTaskRunning() {
+		return notAllTasksRunningStatus(goMarathonApp), nil
 	}
-	return &core.Status{
-		ClientTime: time.Now(),
-		// LastTransitionTime: lastTransitionTime,
-		LastUpdateTime: time.Now(),
-		Msg:            fmt.Sprintf("All tasks running. %d task(s) running.", app.TasksRunning),
-		Done:           true,
-	}, nil
+	return allTasksRunningStatus(goMarathonApp), nil
 }
 
-func (d *marathonDeploymentOperation) Wait(ctx context.Context) (result interface{}, err error) {
-	fmt.Printf("Wait() called with d = %+v\n", d)
-	for _, deploymentID := range d.deploymentIDs {
-		err = d.manager.goMarathonClient.WaitOnDeployment(deploymentID, d.timeoutDuration)
+func notAllTasksRunningStatus(goMarathonApp *goMarathon.Application) *core.OperationStatus {
+	return statusWithTimestamps(
+		&core.OperationStatus{
+			Msg:  fmt.Sprintf("Not all tasks running. %d task(s) running.", goMarathonApp.TasksRunning),
+			Done: false,
+		},
+	)
+}
+
+func allTasksRunningStatus(goMarathonApp *goMarathon.Application) *core.OperationStatus {
+	return statusWithTimestamps(
+		&core.OperationStatus{
+			Msg:  fmt.Sprintf("All tasks running. %d task(s) running.", goMarathonApp.TasksRunning),
+			Done: true,
+		},
+	)
+}
+
+func statusWithTimestamps(status *core.OperationStatus) *core.OperationStatus {
+	status.ClientTime = time.Now()
+	status.LastUpdateTime = time.Now()
+	// status.LastTransitionTime = lastTransitionTime
+	return status
+}
+
+func (d *deployment) Wait(ctx context.Context) (result interface{}, err error) {
+	for _, marathonDeploymentID := range d.marathonDeploymentIDs {
+		err = d.manager.goMarathonClient.WaitOnDeployment(marathonDeploymentID, d.timeoutDuration)
 		if err != nil {
 			return nil, errors.Wrapf(err,
 				"marathon.marathonDeploymentOperation.Wait: goMarathonClient.WaitOnDeployment(%q, %v) failed",
-				deploymentID, d.timeoutDuration)
+				marathonDeploymentID, d.timeoutDuration)
 		}
 	}
 	return nil, nil

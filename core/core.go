@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type App struct {
+type SvcCfg struct {
 	ID    string
 	Image string
 	Count int
@@ -13,7 +13,7 @@ type App struct {
 	DeployTimeoutDuration *time.Duration // pointer because optional
 }
 
-type AppInfo struct {
+type Svc struct {
 	ID             string     `yaml:"ID" json:"ID"`
 	TasksRunning   *int       `yaml:"tasks-running,omitempty" json:"tasks-running,omitempty"`
 	TasksHealthy   *int       `yaml:"tasks-healthy,omitempty" json:"tasks-healthy,omitempty"`
@@ -21,7 +21,7 @@ type AppInfo struct {
 	CreationTime   *time.Time `yaml:"creation-time,omitempty" json:"creation-time,omitempty"`
 }
 
-type Status struct {
+type OperationStatus struct {
 	ClientTime         time.Time
 	LastTransitionTime time.Time
 	LastUpdateTime     time.Time
@@ -29,7 +29,7 @@ type Status struct {
 	Done               bool
 }
 
-type TaskInfo struct {
+type Task struct {
 	Name                string     `yaml:"name" json:"name"`
 	AppID               string     `yaml:"app-id,omitempty" json:"app-id,omitempty"`
 	HostName            string     `yaml:"host-name,omitempty" json:"host-name,omitempty"`
@@ -57,5 +57,5 @@ type Operation interface {
 	Wait(ctx context.Context) (result interface{}, err error)
 
 	// GetStatus is for polling the status of the deployment
-	GetStatus() (status *Status, err error)
+	GetStatus() (status *OperationStatus, err error)
 }

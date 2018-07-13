@@ -3,8 +3,8 @@
 An experimental Go library that attempts to provide a common interface for
 various container-oriented app management systems -- e.g.:
 
-- Marathon
 - Kubernetes
+- Marathon
 
 ## Example usage
 
@@ -33,12 +33,12 @@ manager, err := hyperion.NewManager(managerConfig)
 if err != nil {
 	return err
 }
-app := hyperion.App{
-	ID:    "my-app-id",
+svc := hyperion.Svc{
+	ID:    "my-svc-id",
 	Image: "citizenstig/httpbin",
 	Count: 4,
 }
-operation, err := manager.DeployApp(app)
+operation, err := manager.DeploySvc(svc)
 if err != nil {
 	return err
 }

@@ -9,7 +9,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("app.go", func() {
+var _ = Describe("Marathon integration test", func() {
 	var (
 		mockCtrl *gomock.Controller
 		ctx      = context.Background()
@@ -23,8 +23,8 @@ var _ = Describe("app.go", func() {
 		mockCtrl.Finish()
 	})
 
-	Describe("MarathonManager.CreateApplication", func() {
-		It("deploys an application to Marathon", func() {
+	Describe("deploying to Marathon", func() {
+		It("deploys a service to Marathon as a Marathon application", func() {
 			manager, err := NewManager(
 				ManagerConfig{
 					Type:    "marathon",
@@ -32,20 +32,20 @@ var _ = Describe("app.go", func() {
 				},
 			)
 			Expect(err).ToNot(HaveOccurred())
-			app := App{
-				ID:    "my-app",
+			svc := SvcCfg{
+				ID:    "my-svc",
 				Image: "citizenstig/httpbin:latest",
 				Count: 2,
 			}
-			operation, err := manager.DeployApp(app)
+			deployOperation, err := manager.DeploySvc(svc)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(operation).ToNot(BeNil())
+			Expect(deployOperation).ToNot(BeNil())
 
-			operation.Wait(ctx)
+			deployOperation.Wait(ctx)
 
 			time.Sleep(10 * time.Second)
 
-			destroyOperation, err := manager.DestroyApp("my-app")
+			destroyOperation, err := manager.DestroySvc("my-svc")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(destroyOperation).ToNot(BeNil())
 		})

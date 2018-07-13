@@ -10,11 +10,20 @@ import (
 	"git.corp.adobe.com/abramowi/hyperion/core"
 )
 
+var (
+	goMarathonDefaultAllTasksOpts *goMarathon.AllTasksOpts // = nil
+)
+
+var (
+	goMarathonEmbedTasks = url.Values{"embed": []string{"apps.tasks"}}
+)
+
 type manager struct {
 	goMarathonClient goMarathon.Marathon
 	url              string
 }
 
+// NewManager returns a Manager for Marathon.
 func NewManager(url string) (*manager, error) {
 	config := goMarathon.NewDefaultConfig()
 	config.URL = url
@@ -26,96 +35,97 @@ func NewManager(url string) (*manager, error) {
 	return mgr, nil
 }
 
-// AllApps returns info about all running apps
-func (mgr *manager) AllApps() (results []core.AppInfo, err error) {
-	// return nil, errors.New("marathon.manager.AllApps: Not implemented")
-	apps, err := mgr.goMarathonClient.Applications(url.Values{"embed": []string{"apps.tasks"}})
+// Svcs returns info about all running services.
+func (mgr *manager) Svcs() ([]core.Svc, error) {
+	goMarathonAppsStruct, err := mgr.goMarathonClient.Applications(goMarathonEmbedTasks)
 	if err != nil {
-		return nil, errors.Wrap(err, "marathon.manager.AllApps: goMarathonClient.Applications failed")
+		return nil, errors.Wrap(err, "marathon.manager.Svcs: goMarathonClient.Svcs failed")
 	}
-	appsSlice := apps.Apps
-	results = make([]core.AppInfo, len(appsSlice))
-	for i := range appsSlice {
-		app := appsSlice[i]
-		results[i] = core.AppInfo{
-			ID:             app.ID,
-			TasksRunning:   &app.TasksRunning,
-			TasksHealthy:   &app.TasksHealthy,
-			TasksUnhealthy: &app.TasksUnhealthy,
-		}
+	goMarathonAppsSlice := goMarathonAppsStruct.Apps
+	svcs := make([]core.Svc, len(goMarathonAppsSlice))
+	for i, goMarathonApp := range goMarathonAppsSlice {
+		svcs[i] = svcFromMarathonApp(goMarathonApp)
 	}
-	return results, nil
+	return svcs, nil
 }
 
-// AppTasks returns info about the running tasks for an app
-func (mgr *manager) AppTasks(app core.App) (results []core.TaskInfo, err error) {
-	// return nil, errors.New("marathon.manager.AppTasks: Not implemented")
-	tasks, err := mgr.goMarathonClient.Tasks(app.ID)
+func svcFromMarathonApp(goMarathonApp goMarathon.Application) core.Svc {
+	return core.Svc{
+		ID:             goMarathonApp.ID,
+		TasksRunning:   &goMarathonApp.TasksRunning,
+		TasksHealthy:   &goMarathonApp.TasksHealthy,
+		TasksUnhealthy: &goMarathonApp.TasksUnhealthy,
+	}
+}
+
+// SvcTasks returns info about the running tasks for a service.
+func (mgr *manager) SvcTasks(svcCfg core.SvcCfg) ([]core.Task, error) {
+	goMarathonTasksStruct, err := mgr.goMarathonClient.Tasks(svcCfg.ID)
 	if err != nil {
-		return nil, errors.Wrapf(err, "marathon.manager.AppTasks: goMarathonClient.Tasks(%q) failed", app.ID)
+		return nil, errors.Wrapf(err, "marathon.manager.SvcTasks: goMarathonClient.Tasks(%q) failed", svcCfg.ID)
 	}
 
-	tasksSlice := tasks.Tasks
-	results = make([]core.TaskInfo, len(tasksSlice))
-	for i, task := range tasksSlice {
-		hypTask, err := getHypTaskInfoForMarathonTask(task)
+	goMarathonTasksSlice := goMarathonTasksStruct.Tasks
+	ourTasks := make([]core.Task, len(goMarathonTasksSlice))
+	for i, goMarathonTask := range goMarathonTasksSlice {
+		ourTask, err := ourTaskForGoMarathonTask(goMarathonTask)
 		if err != nil {
 			return nil, err
 		}
-		results[i] = *hypTask
+		ourTasks[i] = *ourTask
 	}
-	return results, nil
+	return ourTasks, nil
 }
 
-// AllTasks returns info about all running tasks
-func (mgr *manager) AllTasks() (results []core.TaskInfo, err error) {
-	var opts *goMarathon.AllTasksOpts
-	tasks, err := mgr.goMarathonClient.AllTasks(opts)
+// Tasks returns info about all running tasks.
+func (mgr *manager) Tasks() ([]core.Task, error) {
+	goMarathonTasksStruct, err := mgr.goMarathonClient.AllTasks(goMarathonDefaultAllTasksOpts)
 	if err != nil {
-		return nil, errors.Wrap(err, "marathon.manager.AllTasks: goMarathonClient.AllTasks failed")
+		return nil, errors.Wrap(err, "marathon.manager.Tasks: goMarathonClient.AllTasks failed")
 	}
 
-	tasksSlice := tasks.Tasks
-	results = make([]core.TaskInfo, len(tasksSlice))
-	for i, task := range tasksSlice {
-		// fmt.Printf("*** task = %+v\n", task)
-		hypTask, err := getHypTaskInfoForMarathonTask(task)
+	goMarathonTasksSlice := goMarathonTasksStruct.Tasks
+	ourTasks := make([]core.Task, len(goMarathonTasksSlice))
+	for i, goMarathonTask := range goMarathonTasksSlice {
+		ourTask, err := ourTaskForGoMarathonTask(goMarathonTask)
 		if err != nil {
 			return nil, err
 		}
-		results[i] = *hypTask
+		ourTasks[i] = *ourTask
 	}
-	return results, nil
+	return ourTasks, nil
 }
 
-func getHypTaskInfoForMarathonTask(task goMarathon.Task) (*core.TaskInfo, error) {
-	taskStageTime, err := parseMarathonTime(task.StagedAt)
+func ourTaskForGoMarathonTask(goMarathonTask goMarathon.Task) (*core.Task, error) {
+	taskStageTime, err := parseMarathonTime(goMarathonTask.StagedAt)
 	if err != nil {
 		return nil, err
 	}
-	taskStartTime, err := parseMarathonTime(task.StartedAt)
+	taskStartTime, err := parseMarathonTime(goMarathonTask.StartedAt)
 	if err != nil {
 		return nil, err
 	}
-	ipAddresses := make([]string, len(task.IPAddresses))
-	for i, addr := range task.IPAddresses {
-		ipAddresses[i] = addr.IPAddress
+	ipAddresses := make([]string, len(goMarathonTask.IPAddresses))
+	for i, goMarathonIPAddressStruct := range goMarathonTask.IPAddresses {
+		ipAddresses[i] = goMarathonIPAddressStruct.IPAddress
 	}
-	return &core.TaskInfo{
-		Name:         task.ID,
-		AppID:        task.AppID,
-		HostName:     task.Host,
+	return &core.Task{
+		Name:         goMarathonTask.ID,
+		AppID:        goMarathonTask.AppID,
+		HostName:     goMarathonTask.Host,
 		IPAddresses:  ipAddresses,
-		Ports:        task.Ports,
-		ServicePorts: task.ServicePorts,
-		MesosSlaveID: task.SlaveID,
+		Ports:        goMarathonTask.Ports,
+		ServicePorts: goMarathonTask.ServicePorts,
+		MesosSlaveID: goMarathonTask.SlaveID,
 		StageTime:    taskStageTime,
 		StartTime:    taskStartTime,
-		State:        task.State,
-		Version:      task.Version,
+		State:        goMarathonTask.State,
+		Version:      goMarathonTask.Version,
 	}, nil
 }
 
+// parseMarathonTime takes a timestamp string from Marathon (formatted as
+// RFC3339) and parses it into a *time.Time.
 func parseMarathonTime(marathonTime string) (*time.Time, error) {
 	if marathonTime != "" {
 		t, err := time.Parse(time.RFC3339, marathonTime)
@@ -128,52 +138,54 @@ func parseMarathonTime(marathonTime string) (*time.Time, error) {
 	return nil, nil
 }
 
-func (mgr *manager) DeployApp(app core.App) (core.Operation, error) {
-	gomApp, err := mgr.goMarathonClient.CreateApplication(goMarathonApp(app))
+// DeploySvc takes a SvcCfg and deploys it, returning an Operation.
+func (mgr *manager) DeploySvc(svcCfg core.SvcCfg) (core.Operation, error) {
+	goMarathonApp, err := mgr.goMarathonClient.CreateApplication(goMarathonApp(svcCfg))
 	if err != nil {
-		return nil, errors.Wrap(err, "marathon.manager.DeployApp: goMarathonClient.CreateApplication failed")
+		return nil, errors.Wrap(err, "marathon.manager.DeploySvc: goMarathonClient.CreateApplication failed")
 	}
-	return mgr.newDeploymentFromGoMarathonApp(gomApp), nil
+	return mgr.newDeploymentFromGoMarathonApp(goMarathonApp), nil
 }
 
-func (mgr *manager) DestroyApp(appID string) (core.Operation, error) {
+// DestroySvc destroys a service.
+func (mgr *manager) DestroySvc(svcID string) (core.Operation, error) {
 	force := false
-	marathonDeploymentID, err := mgr.goMarathonClient.DeleteApplication(appID, force)
+	marathonDeploymentID, err := mgr.goMarathonClient.DeleteApplication(svcID, force)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "marathon.manager.DestroySvc: goMarathonClient.DeleteApplication failed")
 	}
-	op := &marathonDeploymentOperation{
-		appID:           appID,
-		deploymentIDs:   []string{marathonDeploymentID.DeploymentID},
-		manager:         mgr,
-		timeoutDuration: 60 * time.Second,
+	op := &deployment{
+		svcID: svcID,
+		marathonDeploymentIDs: []string{marathonDeploymentID.DeploymentID},
+		manager:               mgr,
+		timeoutDuration:       60 * time.Second,
 	}
 	return op, err
 }
 
-func (mgr *manager) newDeploymentFromGoMarathonApp(gomApp *goMarathon.Application) *marathonDeploymentOperation {
-	return &marathonDeploymentOperation{
-		appID:           gomApp.ID,
-		deploymentIDs:   deploymentIDs(gomApp),
-		manager:         mgr,
-		timeoutDuration: 60 * time.Second,
+func (mgr *manager) newDeploymentFromGoMarathonApp(goMarathonApp *goMarathon.Application) *deployment {
+	return &deployment{
+		svcID: goMarathonApp.ID,
+		marathonDeploymentIDs: marathonDeploymentIDs(goMarathonApp),
+		manager:               mgr,
+		timeoutDuration:       60 * time.Second,
 	}
 }
 
-func goMarathonApp(app core.App) (gomApp *goMarathon.Application) {
-	gomApp = goMarathon.NewDockerApplication()
-	gomApp.ID = app.ID
-	gomApp.Container.Docker.Bridged()
-	gomApp.Container.Docker.Container(app.Image)
-	gomApp.Count(app.Count)
-	return gomApp
+func goMarathonApp(svcCfg core.SvcCfg) *goMarathon.Application {
+	goMarathonApp := goMarathon.NewDockerApplication()
+	goMarathonApp.ID = svcCfg.ID
+	goMarathonApp.Container.Docker.Bridged()
+	goMarathonApp.Container.Docker.Container(svcCfg.Image)
+	goMarathonApp.Count(svcCfg.Count)
+	return goMarathonApp
 }
 
-func deploymentIDs(gomApp *goMarathon.Application) (deploymentIDs []string) {
-	marathonDeploymentIDs := gomApp.DeploymentIDs()
-	deploymentIDs = make([]string, len(marathonDeploymentIDs))
-	for i, marathonDeploymentID := range marathonDeploymentIDs {
-		deploymentIDs[i] = marathonDeploymentID.DeploymentID
+func marathonDeploymentIDs(goMarathonApp *goMarathon.Application) (marathonDeploymentIDs []string) {
+	marathonDeploymentIDStructs := goMarathonApp.DeploymentIDs()
+	marathonDeploymentIDs = make([]string, len(marathonDeploymentIDStructs))
+	for i, marathonDeploymentIDStruct := range marathonDeploymentIDStructs {
+		marathonDeploymentIDs[i] = marathonDeploymentIDStruct.DeploymentID
 	}
-	return deploymentIDs
+	return marathonDeploymentIDs
 }

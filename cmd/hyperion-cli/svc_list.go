@@ -19,41 +19,43 @@ import (
 	"io"
 	"os"
 
-	"git.corp.adobe.com/abramowi/hyperion"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
+	"git.corp.adobe.com/abramowi/hyperion"
 )
 
-var listAppsCmd = &cobra.Command{
+// svcListCmd represents the "svc list" command
+var svcListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "List running apps",
+	Short: "List running services",
 	Run: func(cmd *cobra.Command, args []string) {
 		manager := getManager()
-		apps, err := manager.AllApps()
+		svcs, err := manager.Svcs()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "app list: AllApps error: %s\n", err)
+			fmt.Fprintf(os.Stderr, "svc list: Svcs error: %s\n", err)
 			return
 		}
 
-		err = output(os.Stdout, apps, viper.GetString("output_format"), outputAppListTable)
+		err = output(os.Stdout, svcs, viper.GetString("output_format"), outputSvcListTable)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "app list: output error: %s\n", err)
+			fmt.Fprintf(os.Stderr, "svc list: output error: %s\n", err)
 			return
 		}
 	},
 }
 
-func outputAppListTable(w io.Writer, data interface{}) error {
-	apps := data.([]hyperion.AppInfo)
-	for _, app := range apps {
-		fmt.Fprintf(w, "%-40s\n", app.ID)
+func outputSvcListTable(w io.Writer, data interface{}) error {
+	svcs := data.([]hyperion.Svc)
+	for _, svc := range svcs {
+		fmt.Fprintf(w, "%-40s\n", svc.ID)
 	}
 	return nil
 }
 
 func init() {
-	appCmd.AddCommand(listAppsCmd)
+	svcCmd.AddCommand(svcListCmd)
 
-	listAppsCmd.Flags().StringP("output-format", "f", "yaml", `output format: "table", "yaml", "json"`)
-	viper.BindPFlag("output_format", listTasksCmd.Flags().Lookup("output-format"))
+	svcListCmd.Flags().StringP("output-format", "f", "yaml", `output format: "table", "yaml", "json"`)
+	viper.BindPFlag("output_format", taskListCmd.Flags().Lookup("output-format"))
 }

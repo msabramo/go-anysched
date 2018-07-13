@@ -28,11 +28,12 @@ import (
 )
 
 var (
-	deploySettings = struct{ app hyperion.App }{}
+	deploySettings  = struct{ svcCfg hyperion.SvcCfg }{}
+	timeoutDuration = 15 * time.Second
 )
 
-// deployAppCmd represents the deployApp command
-var deployAppCmd = &cobra.Command{
+// svcDeployCmd represents the "svc deploy" command
+var svcDeployCmd = &cobra.Command{
 	Use:   "deploy",
 	Short: "Deploy an application",
 	Run: func(cmd *cobra.Command, args []string) {
@@ -41,9 +42,9 @@ var deployAppCmd = &cobra.Command{
 		defer cancel()
 		startTime := time.Now()
 		manager := getManager()
-		deployment, err := manager.DeployApp(deploySettings.app)
+		deployment, err := manager.DeploySvc(deploySettings.svcCfg)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "DeployApp error: %s\n", err)
+			fmt.Fprintf(os.Stderr, "DeploySvc error: %s\n", err)
 			return
 		}
 		for key, val := range deployment.GetProperties() {
@@ -77,9 +78,9 @@ var deployAppCmd = &cobra.Command{
 				lastUpdateTime = status.LastUpdateTime
 				if status.Done {
 					elapsedTime := time.Since(startTime)
-					tasks, err := manager.AppTasks(deploySettings.app)
+					tasks, err := manager.SvcTasks(deploySettings.svcCfg)
 					if err != nil {
-						fmt.Fprintf(os.Stderr, "app deploy: AppTasks error: %s\n", err)
+						fmt.Fprintf(os.Stderr, "app deploy: SvcTasks error: %s\n", err)
 						if strings.Contains(err.Error(), "Not implemented") {
 							return
 						}
@@ -105,7 +106,7 @@ var deployAppCmd = &cobra.Command{
 }
 
 func init() {
-	appCmd.AddCommand(deployAppCmd)
+	svcCmd.AddCommand(svcDeployCmd)
 
 	// Here you will define your flags and configuration settings.
 
@@ -115,8 +116,8 @@ func init() {
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	deployAppCmd.Flags().StringVarP(&deploySettings.app.ID, "app-id", "a", "", "app-id for new app")
-	deployAppCmd.Flags().StringVarP(&deploySettings.app.Image, "image", "i", "", "Docker image for new app")
-	deployAppCmd.Flags().IntVarP(&deploySettings.app.Count, "count", "c", 1, "Number of containers to run")
-	deployAppCmd.Flags().DurationVarP(&timeoutDuration, "timeout", "t", timeoutDuration, "Max time to wait for deploy to complete")
+	svcDeployCmd.Flags().StringVarP(&deploySettings.svcCfg.ID, "svc-id", "s", "", "ID for new service")
+	svcDeployCmd.Flags().StringVarP(&deploySettings.svcCfg.Image, "image", "i", "", "Docker image for new service")
+	svcDeployCmd.Flags().IntVarP(&deploySettings.svcCfg.Count, "count", "c", 1, "Number of containers to run")
+	svcDeployCmd.Flags().DurationVarP(&timeoutDuration, "timeout", "t", timeoutDuration, "Max time to wait for deploy to complete")
 }

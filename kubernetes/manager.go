@@ -32,6 +32,7 @@ type manager struct {
 	namespacesClient  tcorev1.NamespaceInterface
 }
 
+// NewManager returns a Manager for Kubernetes.
 func NewManager(url string) (*manager, error) {
 	restConfig, err := configFromKubeconfig()
 	if err != nil {
@@ -82,84 +83,81 @@ func getDefaultKubeconfigFilePath(homeDirPath string) string {
 	return ""
 }
 
-// AllApps returns info about all running apps
-func (mgr *manager) AllApps() (results []core.AppInfo, err error) {
-	deploymentList, err := mgr.deploymentsClient.List(metav1.ListOptions{})
+// Svcs returns info about all running services
+func (mgr *manager) Svcs() ([]core.Svc, error) {
+	k8sDeploymentList, err := mgr.deploymentsClient.List(metav1.ListOptions{})
 	if err != nil {
 		return nil, errors.Wrap(err, "kubernetes.manager.AllApps: deploymentsClient.List failed")
 	}
-	results = make([]core.AppInfo, len(deploymentList.Items))
-	for i := range deploymentList.Items {
-		deployment := deploymentList.Items[i]
-		// fmt.Printf("*** deployment = %+v\n", deployment)
-		tasksRunning := int(deployment.Status.Replicas)
-		tasksHealthy := int(deployment.Status.AvailableReplicas)
-		tasksUnhealthy := int(deployment.Status.UnavailableReplicas)
-		creationTimestamp := deployment.GetCreationTimestamp().Time
-		results[i] = core.AppInfo{
-			ID:             deployment.GetName(),
+	svcs := make([]core.Svc, len(k8sDeploymentList.Items))
+	for i := range k8sDeploymentList.Items {
+		k8sDeployment := k8sDeploymentList.Items[i]
+		tasksRunning := int(k8sDeployment.Status.Replicas)
+		tasksHealthy := int(k8sDeployment.Status.AvailableReplicas)
+		tasksUnhealthy := int(k8sDeployment.Status.UnavailableReplicas)
+		creationTimestamp := k8sDeployment.GetCreationTimestamp().Time
+		svcs[i] = core.Svc{
+			ID:             k8sDeployment.GetName(),
 			TasksRunning:   &tasksRunning,
 			TasksHealthy:   &tasksHealthy,
 			TasksUnhealthy: &tasksUnhealthy,
 			CreationTime:   &creationTimestamp,
 		}
 	}
-	return results, nil
-	// return nil, errors.New("kubernetes.manager.AllApps: Not implemented")
+	return svcs, nil
 }
 
-// AllPods returns info about all running tasks
-func (mgr *manager) AllTasks() (results []core.TaskInfo, err error) {
-	podList, err := mgr.podsClient.List(metav1.ListOptions{})
+// Tasks returns info about all running tasks
+func (mgr *manager) Tasks() ([]core.Task, error) {
+	k8sPodList, err := mgr.podsClient.List(metav1.ListOptions{})
 	if err != nil {
 		return nil, errors.Wrap(err, "kubernetes.manager.AllPods: podsClient.List failed")
 	}
-	results = make([]core.TaskInfo, len(podList.Items))
-	for i := range podList.Items {
-		pod := podList.Items[i]
-		// fmt.Printf("*** pod = %+v\n", pod)
-		cond := getPodCondition(pod.Status, apiv1.PodReady)
-		if cond == nil {
-			continue
-		}
-		results[i] = core.TaskInfo{
-			Name:      pod.GetName(),
-			HostIP:    pod.Status.HostIP,
-			TaskIP:    pod.Status.PodIP,
-			ReadyTime: &cond.LastTransitionTime.Time,
-		}
+	tasks := make([]core.Task, len(k8sPodList.Items))
+	for i, k8sPod := range k8sPodList.Items {
+		tasks[i] = *taskFromK8SPod(k8sPod)
 	}
-	return results, nil
+	return tasks, nil
 }
 
-// AppTasks returns info about the running tasks for an app
-func (mgr *manager) AppTasks(app core.App) (results []core.TaskInfo, err error) {
-	podList, err := mgr.podsClient.List(metav1.ListOptions{LabelSelector: "appID=" + app.ID})
+// SvcTasks returns info about the running tasks for a service
+func (mgr *manager) SvcTasks(svcCfg core.SvcCfg) ([]core.Task, error) {
+	k8sPodList, err := mgr.podsClient.List(metav1.ListOptions{LabelSelector: "appID=" + svcCfg.ID})
 	if err != nil {
-		return nil, errors.Wrap(err, "kubernetes.manager.AppTasks: podsClient.List failed")
+		return nil, errors.Wrapf(err, "kubernetes.manager.AppTasks: podsClient.List failed for svcCfg.ID = %q", svcCfg.ID)
 	}
-	results = make([]core.TaskInfo, len(podList.Items))
-	for i := range podList.Items {
-		pod := podList.Items[i]
-		cond := getPodCondition(pod.Status, apiv1.PodReady)
-		if cond == nil {
-			continue
-		}
-		results[i] = core.TaskInfo{
-			Name:      pod.GetName(),
-			HostIP:    pod.Status.HostIP,
-			TaskIP:    pod.Status.PodIP,
-			ReadyTime: &cond.LastTransitionTime.Time,
-		}
+	tasks := make([]core.Task, len(k8sPodList.Items))
+	for i, k8sPod := range k8sPodList.Items {
+		tasks[i] = *taskFromK8SPod(k8sPod)
 	}
-	sort.Slice(results, func(i, j int) bool {
-		return results[i].ReadyTime != nil && results[j].ReadyTime != nil && results[i].ReadyTime.Before(*results[j].ReadyTime)
-	})
-	return results, nil
+	sortTasksByReadyTime(tasks)
+	return tasks, nil
 }
 
-func (mgr *manager) DeployApp(app core.App) (core.Operation, error) {
-	k8sDeploymentRequest, err := getK8sDeploymentRequest(app)
+func taskFromK8SPod(k8sPod apiv1.Pod) *core.Task {
+	cond := getPodCondition(k8sPod.Status, apiv1.PodReady)
+	if cond == nil {
+		return nil
+	}
+	return &core.Task{
+		Name:      k8sPod.GetName(),
+		HostIP:    k8sPod.Status.HostIP,
+		TaskIP:    k8sPod.Status.PodIP,
+		ReadyTime: &cond.LastTransitionTime.Time,
+	}
+}
+
+func sortTasksByReadyTime(tasks []core.Task) {
+	sort.Slice(tasks, func(i, j int) bool {
+		return tasks[i].ReadyTime != nil &&
+			tasks[j].ReadyTime != nil &&
+			tasks[i].ReadyTime.Before(*tasks[j].ReadyTime)
+	})
+}
+
+// DeploySvc takes a SvcCfg and deploys it, returning an Operation.
+func (mgr *manager) DeploySvc(svcCfg core.SvcCfg) (core.Operation, error) {
+	k8sDeploymentRequest, err := getK8sDeploymentRequest(svcCfg)
 	if err != nil {
 		return nil, errors.Wrap(err, "kubernetes.manager.DeployApp: getK8sDeploymentRequest failed")
 	}
@@ -168,20 +166,21 @@ func (mgr *manager) DeployApp(app core.App) (core.Operation, error) {
 		return nil, errors.Wrap(err, "kubernetes.manager.DeployApp: deploymentsClient.Create failed")
 	}
 
-	return deployment{manager: mgr, Deployment: k8sDeployment, app: app}, nil
+	return deployment{manager: mgr, Deployment: k8sDeployment, svcCfg: svcCfg}, nil
 }
 
-func (mgr *manager) DestroyApp(appID string) (core.Operation, error) {
-	err := mgr.deploymentsClient.Delete(appID, &metav1.DeleteOptions{})
+// DestroySvc destroys a service.
+func (mgr *manager) DestroySvc(svcID string) (core.Operation, error) {
+	err := mgr.deploymentsClient.Delete(svcID, &metav1.DeleteOptions{})
 	if err != nil {
 		return nil, errors.Wrap(err, "kubernetes.manager.DestroyApp: deploymentsClient.Delete failed")
 	}
 	return nil, nil
 }
 
-func getK8sDeploymentRequest(app core.App) (*appsv1.Deployment, error) {
+func getK8sDeploymentRequest(svcCfg core.SvcCfg) (*appsv1.Deployment, error) {
 	var k8sDeploymentRequest appsv1.Deployment
-	data, err := utils.RenderTemplateToBytes("kubernetes-deployment", deploymentYAMLTemplateString, app)
+	data, err := utils.RenderTemplateToBytes("kubernetes-deployment", deploymentYAMLTemplateString, svcCfg)
 	if err != nil {
 		return nil, errors.Wrap(err, "kubernetes.getK8sDeployment: RenderTemplateToBytes failed")
 	}

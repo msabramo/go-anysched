@@ -32,7 +32,7 @@ var rootCmd = &cobra.Command{
 	Use:   "hyperion",
 	Short: "A command for demoing the hyperion library",
 	Long: `A command that demos the hyperion library, allowing the user
-to deploy apps to Marathon, Kubernetes, etc.`,
+to deploy services to Marathon, Kubernetes, etc.`,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

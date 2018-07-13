@@ -24,14 +24,15 @@ import (
 	"github.com/spf13/viper"
 )
 
-var listTasksCmd = &cobra.Command{
+// taskListCmd represents the "task list" command
+var taskListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List running tasks",
 	Run: func(cmd *cobra.Command, args []string) {
 		manager := getManager()
-		tasks, err := manager.AllTasks()
+		tasks, err := manager.Tasks()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "task list: AllTasks error: %s\n", err)
+			fmt.Fprintf(os.Stderr, "task list: Tasks error: %s\n", err)
 			return
 		}
 		err = output(os.Stdout, tasks, viper.GetString("output_format"), outputTaskListTable)
@@ -43,7 +44,7 @@ var listTasksCmd = &cobra.Command{
 }
 
 func outputTaskListTable(w io.Writer, data interface{}) error {
-	tasks := data.([]hyperion.TaskInfo)
+	tasks := data.([]hyperion.Task)
 	for _, task := range tasks {
 		fmt.Fprintf(w, "%-40s %-16s %-16s %s\n", task.Name, task.HostIP, task.TaskIP, task.ReadyTime)
 	}
@@ -51,8 +52,8 @@ func outputTaskListTable(w io.Writer, data interface{}) error {
 }
 
 func init() {
-	taskCmd.AddCommand(listTasksCmd)
+	taskCmd.AddCommand(taskListCmd)
 
-	listTasksCmd.Flags().StringP("output-format", "f", "yaml", `output format: "table", "yaml", "json"`)
-	viper.BindPFlag("output_format", listTasksCmd.Flags().Lookup("output-format"))
+	taskListCmd.Flags().StringP("output-format", "f", "yaml", `output format: "table", "yaml", "json"`)
+	viper.BindPFlag("output_format", taskListCmd.Flags().Lookup("output-format"))
 }
