@@ -172,7 +172,7 @@ func (mgr *manager) DeployApp(app core.App) (core.Operation, error) {
 }
 
 func (mgr *manager) DestroyApp(appID string) (core.Operation, error) {
-	err := mgr.deploymentsClient.Delete(appID, nil)
+	err := mgr.deploymentsClient.Delete(appID, &metav1.DeleteOptions{})
 	if err != nil {
 		return nil, errors.Wrap(err, "kubernetes.manager.DestroyApp: deploymentsClient.Delete failed")
 	}
@@ -180,21 +180,23 @@ func (mgr *manager) DestroyApp(appID string) (core.Operation, error) {
 }
 
 func getK8sDeploymentRequest(app core.App) (*appsv1.Deployment, error) {
-	var k8sDeployment appsv1.Deployment
+	var k8sDeploymentRequest appsv1.Deployment
 	data, err := utils.RenderTemplateToBytes("kubernetes-deployment", deploymentYAMLTemplateString, app)
 	if err != nil {
 		return nil, errors.Wrap(err, "kubernetes.getK8sDeployment: RenderTemplateToBytes failed")
 	}
-	err = decodeYAMLOrJSON(data, &k8sDeployment)
+	err = decodeYAMLOrJSON(data, &k8sDeploymentRequest)
 	if err != nil {
 		return nil, errors.Wrap(err, "kubernetes.getK8sDeployment: decodeYAMLOrJSON failed")
 	}
-	return &k8sDeployment, nil
+	return &k8sDeploymentRequest, nil
 }
 
-func decodeYAMLOrJSON(data []byte, into runtime.Object) error {
+// decodeYAMLOrJSON takes as input `inYAMLOrJSONBytes`: a []byte with YAML or
+// JSON and decodes into the parameter called `out`.
+func decodeYAMLOrJSON(inYAMLOrJSONBytes []byte, out runtime.Object) error {
 	var defaults *schema.GroupVersionKind
-	_, _, err := scheme.Codecs.UniversalDeserializer().Decode(data, defaults, into)
+	_, _, err := scheme.Codecs.UniversalDeserializer().Decode(inYAMLOrJSONBytes, defaults, out)
 	if err != nil {
 		return errors.Wrap(err, "kubernetes.decodeYAMLOrJSON: UniversalDeserializer().Decode failed")
 	}
