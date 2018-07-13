@@ -39,6 +39,7 @@ type TaskInfo struct {
 	Ports               []int      `yaml:"ports,omitempty" json:"ports,omitempty"`
 	ServicePorts        []int      `yaml:"service-ports,omitempty" json:"service-ports,omitempty"`
 	MesosSlaveID        string     `yaml:"mesos-slave-id,omitempty" json:"mesos-slave-id,omitempty"`
+	StageTime           *time.Time `yaml:"stage-time,omitempty" json:"stage-time,omitempty"`
 	StartTime           *time.Time `yaml:"start-time,omitempty" json:"start-time,omitempty"`
 	ReadyTime           *time.Time `yaml:"ready-time,omitempty" json:"ready-time,omitempty"`
 	LastHealthCheckTime *time.Time `yaml:"last-health-check-time,omitempty" json:"last-health-check-time,omitempty"`

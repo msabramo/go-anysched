@@ -52,37 +52,17 @@ func (mgr *manager) AppTasks(app core.App) (results []core.TaskInfo, err error) 
 	// return nil, errors.New("marathon.manager.AppTasks: Not implemented")
 	tasks, err := mgr.goMarathonClient.Tasks(app.ID)
 	if err != nil {
-		return nil, errors.Wrap(err, "marathon.manager.AppTasks: goMarathonClient.Tasks failed")
+		return nil, errors.Wrapf(err, "marathon.manager.AppTasks: goMarathonClient.Tasks(%q) failed", app.ID)
 	}
 
 	tasksSlice := tasks.Tasks
 	results = make([]core.TaskInfo, len(tasksSlice))
 	for i, task := range tasksSlice {
-		// fmt.Printf("*** task = %+v\n", task)
-		taskStartTime := new(time.Time)
-		if task.StartedAt != "" {
-			startTime, err := time.Parse(time.RFC3339, task.StartedAt)
-			if err != nil {
-				return nil, errors.Wrapf(err, "marathon.manager.AllTasks: time.Parse failed for %s", task.StartedAt)
-			}
-			*taskStartTime = startTime
+		hypTask, err := getHypTaskInfoForMarathonTask(task)
+		if err != nil {
+			return nil, err
 		}
-		ipAddresses := make([]string, len(task.IPAddresses))
-		for i, addr := range task.IPAddresses {
-			ipAddresses[i] = addr.IPAddress
-		}
-		results[i] = core.TaskInfo{
-			Name:         task.ID,
-			AppID:        task.AppID,
-			HostName:     task.Host,
-			IPAddresses:  ipAddresses,
-			Ports:        task.Ports,
-			ServicePorts: task.ServicePorts,
-			MesosSlaveID: task.SlaveID,
-			StartTime:    taskStartTime,
-			State:        task.State,
-			Version:      task.Version,
-		}
+		results[i] = *hypTask
 	}
 	return results, nil
 }
@@ -99,32 +79,53 @@ func (mgr *manager) AllTasks() (results []core.TaskInfo, err error) {
 	results = make([]core.TaskInfo, len(tasksSlice))
 	for i, task := range tasksSlice {
 		// fmt.Printf("*** task = %+v\n", task)
-		taskStartTime := new(time.Time)
-		if task.StartedAt != "" {
-			startTime, err := time.Parse(time.RFC3339, task.StartedAt)
-			if err != nil {
-				return nil, errors.Wrapf(err, "marathon.manager.AllTasks: time.Parse failed for %s", task.StartedAt)
-			}
-			*taskStartTime = startTime
+		hypTask, err := getHypTaskInfoForMarathonTask(task)
+		if err != nil {
+			return nil, err
 		}
-		ipAddresses := make([]string, len(task.IPAddresses))
-		for i, addr := range task.IPAddresses {
-			ipAddresses[i] = addr.IPAddress
-		}
-		results[i] = core.TaskInfo{
-			Name:         task.ID,
-			AppID:        task.AppID,
-			HostName:     task.Host,
-			IPAddresses:  ipAddresses,
-			Ports:        task.Ports,
-			ServicePorts: task.ServicePorts,
-			MesosSlaveID: task.SlaveID,
-			StartTime:    taskStartTime,
-			State:        task.State,
-			Version:      task.Version,
-		}
+		results[i] = *hypTask
 	}
 	return results, nil
+}
+
+func getHypTaskInfoForMarathonTask(task goMarathon.Task) (*core.TaskInfo, error) {
+	taskStageTime, err := parseMarathonTime(task.StagedAt)
+	if err != nil {
+		return nil, err
+	}
+	taskStartTime, err := parseMarathonTime(task.StartedAt)
+	if err != nil {
+		return nil, err
+	}
+	ipAddresses := make([]string, len(task.IPAddresses))
+	for i, addr := range task.IPAddresses {
+		ipAddresses[i] = addr.IPAddress
+	}
+	return &core.TaskInfo{
+		Name:         task.ID,
+		AppID:        task.AppID,
+		HostName:     task.Host,
+		IPAddresses:  ipAddresses,
+		Ports:        task.Ports,
+		ServicePorts: task.ServicePorts,
+		MesosSlaveID: task.SlaveID,
+		StageTime:    taskStageTime,
+		StartTime:    taskStartTime,
+		State:        task.State,
+		Version:      task.Version,
+	}, nil
+}
+
+func parseMarathonTime(marathonTime string) (*time.Time, error) {
+	if marathonTime != "" {
+		t, err := time.Parse(time.RFC3339, marathonTime)
+		if err != nil {
+			return nil, errors.Wrapf(err,
+				"marathon.manager.parseMarathonTime: time.Parse failed for: %s", marathonTime)
+		}
+		return &t, nil
+	}
+	return nil, nil
 }
 
 func (mgr *manager) DeployApp(app core.App) (core.Operation, error) {
