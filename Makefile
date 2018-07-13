@@ -19,9 +19,8 @@ build: ## Build all the things
 	CLICOLOR=1 ls -l $(BINARIES)
 
 cli-smoketest: ## Quickly exercise hyperion-cli
-	$(HYPERION_CLI) app deploy --app-id=$(TEST_APP_NAME) --image=$(TEST_APP_IMAGE) --count=$(TEST_APP_COUNT)
-	sleep 15
-	$(HYPERION_CLI) app destroy --app-id=$(TEST_APP_NAME)
+	$(HYPERION_CLI) svc deploy --svc-id=$(TEST_APP_NAME) --image=$(TEST_APP_IMAGE) --count=$(TEST_APP_COUNT)
+	$(HYPERION_CLI) svc destroy --svc-id=$(TEST_APP_NAME)
 
 check: test-race vet lint ## Run tests and linters
 

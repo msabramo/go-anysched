@@ -29,7 +29,7 @@ var cfgFile string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "hyperion",
+	Use:   "hyperion-cli",
 	Short: "A command for demoing the hyperion library",
 	Long: `A command that demos the hyperion library, allowing the user
 to deploy services to Marathon, Kubernetes, etc.`,
