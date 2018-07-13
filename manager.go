@@ -11,6 +11,7 @@ import (
 )
 
 type App = core.App
+type AppInfo = core.AppInfo
 type Operation = core.Operation
 type TaskInfo = core.TaskInfo
 
@@ -38,6 +39,11 @@ type ManagerConfig struct {
 	Address string      // e.g.: "http://127.0.0.1:8080"
 }
 
+type AllAppsGetter interface {
+	// AllApps returns info about the running apps
+	AllApps() (results []AppInfo, err error)
+}
+
 type AppTasksGetter interface {
 	// AppTasks returns info about the running tasks for an app
 	AppTasks(app core.App) (results []TaskInfo, err error)
@@ -57,6 +63,7 @@ type Destroyer interface {
 }
 
 type Manager interface {
+	AllAppsGetter
 	AllTasksGetter
 	AppTasksGetter
 	Deployer

@@ -29,6 +29,7 @@ type manager struct {
 	clientset         *kubernetes.Clientset
 	deploymentsClient tappsv1.DeploymentInterface
 	podsClient        tcorev1.PodInterface
+	namespacesClient  tcorev1.NamespaceInterface
 }
 
 func NewManager(url string) (*manager, error) {
@@ -40,16 +41,12 @@ func NewManager(url string) (*manager, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "kubernetes.NewManager: kubernetes.NewForConfig failed")
 	}
-	// fmt.Printf("*** clientset = %+v\n", clientset)
-	// namespaces, err := clientset.CoreV1().Namespaces().List(metav1.ListOptions{})
-	// fmt.Printf("*** namespaces = %+v\n", namespaces)
-	// pods, err := clientset.CoreV1().Pods("").List(metav1.ListOptions{})
-	// fmt.Printf("*** pods = %+v\n", pods)
 
 	mgr := &manager{
 		clientset:         clientset,
 		deploymentsClient: clientset.AppsV1().Deployments(apiv1.NamespaceDefault),
 		podsClient:        clientset.CoreV1().Pods(apiv1.NamespaceDefault),
+		namespacesClient:  clientset.CoreV1().Namespaces(),
 	}
 	return mgr, nil
 }
@@ -83,6 +80,32 @@ func getDefaultKubeconfigFilePath(homeDirPath string) string {
 		return filepath.Join(homeDirPath, ".kube", "config")
 	}
 	return ""
+}
+
+// AllApps returns info about all running apps
+func (mgr *manager) AllApps() (results []core.AppInfo, err error) {
+	deploymentList, err := mgr.deploymentsClient.List(metav1.ListOptions{})
+	if err != nil {
+		return nil, errors.Wrap(err, "kubernetes.manager.AllApps: deploymentsClient.List failed")
+	}
+	results = make([]core.AppInfo, len(deploymentList.Items))
+	for i := range deploymentList.Items {
+		deployment := deploymentList.Items[i]
+		// fmt.Printf("*** deployment = %+v\n", deployment)
+		tasksRunning := int(deployment.Status.Replicas)
+		tasksHealthy := int(deployment.Status.AvailableReplicas)
+		tasksUnhealthy := int(deployment.Status.UnavailableReplicas)
+		creationTimestamp := deployment.GetCreationTimestamp().Time
+		results[i] = core.AppInfo{
+			ID:             deployment.GetName(),
+			TasksRunning:   &tasksRunning,
+			TasksHealthy:   &tasksHealthy,
+			TasksUnhealthy: &tasksUnhealthy,
+			CreationTime:   &creationTimestamp,
+		}
+	}
+	return results, nil
+	// return nil, errors.New("kubernetes.manager.AllApps: Not implemented")
 }
 
 // AllPods returns info about all running tasks

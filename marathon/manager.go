@@ -1,6 +1,7 @@
 package marathon
 
 import (
+	"net/url"
 	"time"
 
 	goMarathon "github.com/gambol99/go-marathon"
@@ -23,6 +24,27 @@ func NewManager(url string) (*manager, error) {
 	}
 	mgr := &manager{goMarathonClient: client, url: url}
 	return mgr, nil
+}
+
+// AllApps returns info about all running apps
+func (mgr *manager) AllApps() (results []core.AppInfo, err error) {
+	// return nil, errors.New("marathon.manager.AllApps: Not implemented")
+	apps, err := mgr.goMarathonClient.Applications(url.Values{"embed": []string{"apps.tasks"}})
+	if err != nil {
+		return nil, errors.Wrap(err, "marathon.manager.AllApps: goMarathonClient.Applications failed")
+	}
+	appsSlice := apps.Apps
+	results = make([]core.AppInfo, len(appsSlice))
+	for i := range appsSlice {
+		app := appsSlice[i]
+		results[i] = core.AppInfo{
+			ID:             app.ID,
+			TasksRunning:   &app.TasksRunning,
+			TasksHealthy:   &app.TasksHealthy,
+			TasksUnhealthy: &app.TasksUnhealthy,
+		}
+	}
+	return results, nil
 }
 
 // AppTasks returns info about the running tasks for an app

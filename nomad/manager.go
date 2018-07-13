@@ -31,6 +31,11 @@ func Sptr(s string) *string {
 	return &s
 }
 
+// AllApps returns info about all running apps
+func (mgr *manager) AllApps() (results []core.AppInfo, err error) {
+	return nil, errors.New("nomad.manager.AllApps: Not implemented")
+}
+
 // AppTasks returns info about the running tasks for an app
 func (mgr *manager) AppTasks(app core.App) (results []core.TaskInfo, err error) {
 	return nil, errors.New("nomad.manager.AppTasks: Not implemented")

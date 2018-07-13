@@ -13,6 +13,14 @@ type App struct {
 	DeployTimeoutDuration *time.Duration // pointer because optional
 }
 
+type AppInfo struct {
+	ID             string     `yaml:"ID" json:"ID"`
+	TasksRunning   *int       `yaml:"tasks-running,omitempty" json:"tasks-running,omitempty"`
+	TasksHealthy   *int       `yaml:"tasks-healthy,omitempty" json:"tasks-healthy,omitempty"`
+	TasksUnhealthy *int       `yaml:"tasks-unhealthy,omitempty" json:"tasks-unhealthy,omitempty"`
+	CreationTime   *time.Time `yaml:"creation-time,omitempty" json:"creation-time,omitempty"`
+}
+
 type Status struct {
 	ClientTime         time.Time
 	LastTransitionTime time.Time
