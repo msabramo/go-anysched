@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
 	"git.corp.adobe.com/abramowi/hyperion"
 )
@@ -35,7 +36,8 @@ var deployAppCmd = &cobra.Command{
 	Use:   "deploy",
 	Short: "Deploy an application",
 	Run: func(cmd *cobra.Command, args []string) {
-		ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+		timeout := 60 * time.Second
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
 		defer cancel()
 		startTime := time.Now()
 		manager := getManager()
@@ -57,13 +59,13 @@ var deployAppCmd = &cobra.Command{
 		for {
 			select {
 			case <-ctx.Done():
-				fmt.Fprintf(os.Stderr, "Deployment polling error: %s\n", ctx.Err())
+				fmt.Fprintf(os.Stderr, "Deployment polling aborted after %v: %s\n", timeout, ctx.Err())
 				return
 			case <-time.After(1 * time.Second):
 				status, err := deployment.GetStatus()
 				if err != nil {
 					fmt.Fprintf(os.Stderr, "GetStatus error: %s\n", err)
-					if strings.Contains(err.Error(), "Not implemented yet") {
+					if strings.Contains(err.Error(), "Not implemented") {
 						return
 					}
 					continue
@@ -75,14 +77,19 @@ var deployAppCmd = &cobra.Command{
 				lastUpdateTime = status.LastUpdateTime
 				if status.Done {
 					elapsedTime := time.Since(startTime)
-					fmt.Printf("Deployment completed in %s\n", elapsedTime)
 					tasks, err := manager.AppTasks(deploySettings.app)
 					if err != nil {
 						fmt.Fprintf(os.Stderr, "app deploy: AppTasks error: %s\n", err)
+						if strings.Contains(err.Error(), "Not implemented") {
+							return
+						}
 						continue
 					}
-					for _, task := range tasks {
-						fmt.Printf("%-40s %-16s %-16s %s\n", task.Name, task.HostIP, task.TaskIP, task.ReadyTime)
+					fmt.Printf("Deployment completed in %s\n", elapsedTime)
+					err = output(os.Stdout, tasks, viper.GetString("output_format"), outputTaskListTable)
+					if err != nil {
+						fmt.Fprintf(os.Stderr, "app list: task list output error: %s\n", err)
+						return
 					}
 					return
 				}

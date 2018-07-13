@@ -27,12 +27,46 @@ func NewManager(url string) (*manager, error) {
 
 // AppTasks returns info about the running tasks for an app
 func (mgr *manager) AppTasks(app core.App) (results []core.TaskInfo, err error) {
-	return nil, errors.New("marathon.manager.AppTasks: Not implemented")
+	// return nil, errors.New("marathon.manager.AppTasks: Not implemented")
+	tasks, err := mgr.goMarathonClient.Tasks(app.ID)
+	if err != nil {
+		return nil, errors.Wrap(err, "marathon.manager.AppTasks: goMarathonClient.Tasks failed")
+	}
+
+	tasksSlice := tasks.Tasks
+	results = make([]core.TaskInfo, len(tasksSlice))
+	for i, task := range tasksSlice {
+		// fmt.Printf("*** task = %+v\n", task)
+		taskStartTime := new(time.Time)
+		if task.StartedAt != "" {
+			startTime, err := time.Parse(time.RFC3339, task.StartedAt)
+			if err != nil {
+				return nil, errors.Wrapf(err, "marathon.manager.AllTasks: time.Parse failed for %s", task.StartedAt)
+			}
+			*taskStartTime = startTime
+		}
+		ipAddresses := make([]string, len(task.IPAddresses))
+		for i, addr := range task.IPAddresses {
+			ipAddresses[i] = addr.IPAddress
+		}
+		results[i] = core.TaskInfo{
+			Name:         task.ID,
+			AppID:        task.AppID,
+			HostName:     task.Host,
+			IPAddresses:  ipAddresses,
+			Ports:        task.Ports,
+			ServicePorts: task.ServicePorts,
+			MesosSlaveID: task.SlaveID,
+			StartTime:    taskStartTime,
+			State:        task.State,
+			Version:      task.Version,
+		}
+	}
+	return results, nil
 }
 
 // AllTasks returns info about all running tasks
 func (mgr *manager) AllTasks() (results []core.TaskInfo, err error) {
-	// return nil, errors.New("marathon.manager.AllTasks: Not implemented")
 	var opts *goMarathon.AllTasksOpts
 	tasks, err := mgr.goMarathonClient.AllTasks(opts)
 	if err != nil {
