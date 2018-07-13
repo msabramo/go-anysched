@@ -18,6 +18,7 @@ type manager struct {
 	url        string
 }
 
+// NewManager returns a Manager for Nomad.
 func NewManager(url string) (*manager, error) {
 	config := &api.Config{Address: url}
 	client, err := api.NewClient(config)
@@ -25,10 +26,6 @@ func NewManager(url string) (*manager, error) {
 		return nil, errors.Wrap(err, "nomad.NewManager: api.NewClient failed")
 	}
 	return &manager{client: client, jobsClient: client.Jobs(), url: url}, nil
-}
-
-func Sptr(s string) *string {
-	return &s
 }
 
 // AllApps returns info about all running apps

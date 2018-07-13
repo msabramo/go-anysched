@@ -5,6 +5,15 @@ import (
 	"time"
 )
 
+// Svc is short for "service" and it is our term for something that gets
+// scheduled or destroyed by a Manager
+// e.g.: a Marathon application, Kubernetes deployment, etc.
+// Svc is our abstract term that encompasses these types of things
+
+// SvcCfg is used to pass information to a Manager about how to configure a
+// service.
+//
+// In other words, it serves as an input to various Manager methods.
 type SvcCfg struct {
 	ID    string
 	Image string
@@ -13,6 +22,8 @@ type SvcCfg struct {
 	DeployTimeoutDuration *time.Duration // pointer because optional
 }
 
+// Svc contains information about a service, such as when it was started and
+// how many tasks are running.
 type Svc struct {
 	ID             string     `yaml:"ID" json:"ID"`
 	TasksRunning   *int       `yaml:"tasks-running,omitempty" json:"tasks-running,omitempty"`
@@ -21,6 +32,7 @@ type Svc struct {
 	CreationTime   *time.Time `yaml:"creation-time,omitempty" json:"creation-time,omitempty"`
 }
 
+// OperationStatus represents the status of a pending operation, such as a deployment.
 type OperationStatus struct {
 	ClientTime         time.Time
 	LastTransitionTime time.Time
@@ -29,6 +41,8 @@ type OperationStatus struct {
 	Done               bool
 }
 
+// Task contains information about an individual task, such as when it was
+// started and what IP addresses are assigned to it.
 type Task struct {
 	Name                string     `yaml:"name" json:"name"`
 	AppID               string     `yaml:"app-id,omitempty" json:"app-id,omitempty"`
@@ -48,6 +62,13 @@ type Task struct {
 	Version             string     `yaml:"version,omitempty" json:"version,omitempty"`
 }
 
+// Operation is an interface that abstracts operations excecuted by a Manager,
+// such as deploying or destroying a service in a scheduler.
+//
+// Operation has methods that allow client code to check the operation's status
+// or wait for it to complete.
+//
+// Many methods of Manager will return an Operation.
 type Operation interface {
 	// GetProperties returns a map with all labels, annotations, and basic
 	// properties like name or uid

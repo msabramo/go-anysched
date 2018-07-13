@@ -19,6 +19,7 @@ type manager struct {
 	url    string
 }
 
+// NewManager returns a Manager for Docker Swarm.
 func NewManager(url string) (*manager, error) {
 	client, err := dockerclient.NewEnvClient()
 	if err != nil {
