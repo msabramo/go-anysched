@@ -28,26 +28,27 @@ func NewManager(url string) (*manager, error) {
 	return &manager{client: client, url: url}, nil
 }
 
-// AllApps returns info about all running apps
-func (mgr *manager) AllApps() (results []core.AppInfo, err error) {
-	return nil, errors.New("dockerswarm.manager.AllApps: Not implemented")
+// Svcs returns info about all running services.
+func (mgr *manager) Svcs() ([]core.Svc, error) {
+	return nil, errors.New("dockerswarm.manager.Svcs: Not implemented")
 }
 
-// AppTasks returns info about the running tasks for an app
-func (mgr *manager) AppTasks(app core.App) (results []core.TaskInfo, err error) {
-	return nil, errors.New("dockerswarm.manager.AppTasks: Not implemented")
+// SvcTasks returns info about the running tasks for a service.
+func (mgr *manager) SvcTasks(svcCfg core.SvcCfg) ([]core.Task, error) {
+	return nil, errors.New("dockerswarm.manager.SvcTasks: Not implemented")
 }
 
-// AllTasks returns info about all running tasks
-func (mgr *manager) AllTasks() (results []core.TaskInfo, err error) {
-	return nil, errors.New("dockerswarm.manager.AllTasks: Not implemented")
+// Tasks returns info about all running tasks.
+func (mgr *manager) Tasks() ([]core.Task, error) {
+	return nil, errors.New("dockerswarm.manager.Tasks: Not implemented")
 }
 
-func (mgr *manager) DeployApp(app core.App) (core.Operation, error) {
-	count := uint64(app.Count)
+// DeploySvc takes a SvcCfg and deploys it, returning an Operation.
+func (mgr *manager) DeploySvc(svcCfg core.SvcCfg) (core.Operation, error) {
+	count := uint64(svcCfg.Count)
 	service := swarm.ServiceSpec{
 		Annotations: swarm.Annotations{
-			Name: app.ID,
+			Name: svcCfg.ID,
 		},
 		Mode: swarm.ServiceMode{
 			Replicated: &swarm.ReplicatedService{
@@ -56,7 +57,7 @@ func (mgr *manager) DeployApp(app core.App) (core.Operation, error) {
 		},
 		TaskTemplate: swarm.TaskSpec{
 			ContainerSpec: swarm.ContainerSpec{
-				Image: app.Image,
+				Image: svcCfg.Image,
 			},
 		},
 	}
@@ -64,15 +65,16 @@ func (mgr *manager) DeployApp(app core.App) (core.Operation, error) {
 	serviceCreateResponse, err := mgr.client.ServiceCreate(ctx, service, options)
 	fmt.Printf("*** serviceCreateResponse = %+v; err = %+v\n", serviceCreateResponse, err)
 	if err != nil {
-		return nil, errors.Wrap(err, "dockerswarm.manager.DeployApp: mgr.client.ServiceCreate failed")
+		return nil, errors.Wrap(err, "dockerswarm.manager.DeploySvc: mgr.client.ServiceCreate failed")
 	}
 	return nil, nil
 }
 
-func (mgr *manager) DestroyApp(appID string) (core.Operation, error) {
-	err := mgr.client.ServiceRemove(ctx, appID)
+// DestroySvc destroys a service.
+func (mgr *manager) DestroySvc(svcID string) (core.Operation, error) {
+	err := mgr.client.ServiceRemove(ctx, svcID)
 	if err != nil {
-		return nil, errors.Wrap(err, "dockerswarm.manager.DestroyApp: mgr.client.ServiceRemove failed")
+		return nil, errors.Wrap(err, "dockerswarm.manager.DestroySvc: mgr.client.ServiceRemove failed")
 	}
 	return nil, nil
 }

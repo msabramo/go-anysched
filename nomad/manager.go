@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 
 	"git.corp.adobe.com/abramowi/hyperion/core"
+	"git.corp.adobe.com/abramowi/hyperion/utils"
 )
 
 var ctx = context.TODO()
@@ -18,7 +19,7 @@ type manager struct {
 	url        string
 }
 
-// NewManager returns a Manager for Nomad.
+// NewManager returns a Manager for Kubernetes.
 func NewManager(url string) (*manager, error) {
 	config := &api.Config{Address: url}
 	client, err := api.NewClient(config)
@@ -28,57 +29,59 @@ func NewManager(url string) (*manager, error) {
 	return &manager{client: client, jobsClient: client.Jobs(), url: url}, nil
 }
 
-// AllApps returns info about all running apps
-func (mgr *manager) AllApps() (results []core.AppInfo, err error) {
-	return nil, errors.New("nomad.manager.AllApps: Not implemented")
+// Svcs returns info about all running services.
+func (mgr *manager) Svcs() ([]core.Svc, error) {
+	return nil, errors.New("nomad.manager.Svcs: Not implemented")
 }
 
-// AppTasks returns info about the running tasks for an app
-func (mgr *manager) AppTasks(app core.App) (results []core.TaskInfo, err error) {
-	return nil, errors.New("nomad.manager.AppTasks: Not implemented")
+// SvcTasks returns info about the running tasks for a service.
+func (mgr *manager) SvcTasks(svcCfg core.SvcCfg) ([]core.Task, error) {
+	return nil, errors.New("nomad.manager.SvcTasks: Not implemented")
 }
 
-// AllTasks returns info about all running tasks
-func (mgr *manager) AllTasks() (results []core.TaskInfo, err error) {
-	return nil, errors.New("nomad.manager.AllTasks: Not implemented")
+// Tasks returns info about all running tasks.
+func (mgr *manager) Tasks() ([]core.Task, error) {
+	return nil, errors.New("nomad.manager.Tasks: Not implemented")
 }
 
-func (mgr *manager) DeployApp(app core.App) (core.Operation, error) {
-	job := getJob(app)
+// DeploySvc takes a SvcCfg and deploys it, returning an Operation.
+func (mgr *manager) DeploySvc(svcCfg core.SvcCfg) (core.Operation, error) {
+	job := getJob(svcCfg)
 	jobRegisterResponse, writeMeta, err := mgr.jobsClient.Register(job, &api.WriteOptions{})
 	fmt.Printf("*** jobRegisterResponse = %+v; writeMeta = %+v; err = %+v\n", jobRegisterResponse, writeMeta, err)
 	if err != nil {
-		return nil, errors.Wrap(err, "nomad.manager.DeployApp: mgr.jobsClient.Register failed")
+		return nil, errors.Wrap(err, "nomad.manager.DeploySvc: mgr.jobsClient.Register failed")
 	}
 	return nil, nil
 }
 
-func (mgr *manager) DestroyApp(appID string) (core.Operation, error) {
+// DestroySvc destroys a service.
+func (mgr *manager) DestroySvc(svcID string) (core.Operation, error) {
 	purge := true
-	jobDeregisterResponse, writeMeta, err := mgr.jobsClient.Deregister(appID, purge, &api.WriteOptions{})
+	jobDeregisterResponse, writeMeta, err := mgr.jobsClient.Deregister(svcID, purge, &api.WriteOptions{})
 	fmt.Printf("*** jobDeregisterResponse = %+v; writeMeta = %+v; err = %+v\n", jobDeregisterResponse, writeMeta, err)
 	if err != nil {
-		return nil, errors.Wrap(err, "nomad.manager.DestroyApp: mgr.jobsClient.Deregister failed")
+		return nil, errors.Wrap(err, "nomad.manager.DestroySvc: mgr.jobsClient.Deregister failed")
 	}
 	return nil, err
 }
 
-func getJob(app core.App) *api.Job {
+func getJob(svcCfg core.SvcCfg) *api.Job {
 	return &api.Job{
-		ID:          Sptr(app.ID),
-		Name:        Sptr(app.ID),
-		Type:        Sptr(api.JobTypeService),
+		ID:          utils.Sptr(svcCfg.ID),
+		Name:        utils.Sptr(svcCfg.ID),
+		Type:        utils.Sptr(api.JobTypeService),
 		Datacenters: []string{"dc1"},
 		TaskGroups: []*api.TaskGroup{
 			&api.TaskGroup{
-				Name:  Sptr(app.ID),
-				Count: &app.Count,
+				Name:  utils.Sptr(svcCfg.ID),
+				Count: &svcCfg.Count,
 				Tasks: []*api.Task{
 					&api.Task{
-						Name:   app.ID,
+						Name:   svcCfg.ID,
 						Driver: "docker",
 						Config: map[string]interface{}{
-							"image": app.Image,
+							"image": svcCfg.Image,
 						},
 					},
 				},
