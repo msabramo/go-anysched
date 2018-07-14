@@ -1,0 +1,37 @@
+{
+  "Vendor": true,
+  "Deadline": "2m",
+  "Sort": ["linter", "severity", "path", "line"],
+  "Exclude": ["vendor"],
+  "EnableGC": true,
+  "Linters": {
+      "gofmt": {
+        "Command": "gofmt -l",
+        "Pattern": "^(?P<path>.*?\\.go)$"
+      },
+      "nakedret": {
+        "Command": "nakedret",
+        "Pattern": "^(?P<path>.*?\\.go):(?P<line>\\d+)\\s*(?P<message>.*)$"
+      },
+      "printf": {
+        "Command": "ag --noheading 'fmt\\.Printf'",
+        "Pattern": "^(?P<path>.*?\\.go):(?P<line>\\d+)\\s*(?P<message>.*)$"
+      }
+  },
+  "WarnUnmatchedDirective": true,
+
+  "DisableAll": true,
+  "Enable": [
+    "gocyclo",
+    "gofmt",
+    "goimports",
+    "golint",
+    "interfacer",
+    "lll",
+    "nakedret",
+    "vet"
+  ],
+
+  "Cyclo": 41,
+  "LineLength": 120
+}
