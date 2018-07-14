@@ -15,7 +15,9 @@ func die(format string, a ...interface{}) {
 	os.Exit(1)
 }
 
-func output(w io.Writer, data interface{}, format string, outputTable func(w io.Writer, data interface{}) error) error {
+func output(w io.Writer, data interface{}, format string,
+	outputTable func(w io.Writer, data interface{}) error,
+) error {
 	switch format {
 	case "yaml":
 		return outputYAML(w, data)
