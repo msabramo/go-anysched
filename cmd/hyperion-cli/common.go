@@ -6,11 +6,12 @@ import (
 	"io"
 	"os"
 
+	"github.com/lithammer/dedent"
 	yaml "gopkg.in/yaml.v2"
 )
 
 func die(format string, a ...interface{}) {
-	fmt.Fprintf(os.Stderr, format+"\n", a...)
+	fmt.Fprintf(os.Stderr, dedent.Dedent(format)+"\n", a...)
 	os.Exit(1)
 }
 

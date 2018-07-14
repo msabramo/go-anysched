@@ -91,6 +91,13 @@ func getManager() hyperion.Manager {
 
 func getManagerConfig() hyperion.ManagerConfig {
 	env := viper.GetString("env")
+	if env == "" {
+		die(`
+			No env set. Set it with:
+			  * --env option on command-line
+			  * "env" setting in config file
+			  * HYPERIONCLI_ENV environment variable`)
+	}
 	envRootKey := fmt.Sprintf("envs.%s", env)
 	if viper.Get(envRootKey) == nil {
 		die("env was %q but there was no %q in config file: %s", env, envRootKey, viper.ConfigFileUsed())

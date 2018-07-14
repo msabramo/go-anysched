@@ -311,6 +311,12 @@
   revision = "13f86432b882000a51c6e610c620974462691a97"
 
 [[projects]]
+  name = "github.com/lithammer/dedent"
+  packages = ["."]
+  revision = "a1eba44eaecc89804e4b05ce2d17168eb353d524"
+  version = "v1.0.0"
+
+[[projects]]
   name = "github.com/magiconair/properties"
   packages = ["."]
   revision = "c2353362d570a7bfa228149c62842019201cfb71"
@@ -698,6 +704,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "7c0f18d67f9426fa05894e5621d8e49f8f0451593e7e70ebda43624e16369928"
+  inputs-digest = "890f1283196ea007cb8d8f9fd91922f65faeecd448ba1bcb2f81d97ad54fbc55"
   solver-name = "gps-cdcl"
   solver-version = 1
