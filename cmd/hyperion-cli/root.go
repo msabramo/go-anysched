@@ -22,6 +22,10 @@ import (
 	"github.com/spf13/viper"
 
 	"git.corp.adobe.com/abramowi/hyperion"
+	_ "git.corp.adobe.com/abramowi/hyperion/dockerswarm"
+	_ "git.corp.adobe.com/abramowi/hyperion/kubernetes"
+	_ "git.corp.adobe.com/abramowi/hyperion/marathon"
+	_ "git.corp.adobe.com/abramowi/hyperion/nomad"
 )
 
 var cfgFile string
@@ -76,31 +80,22 @@ func initConfig() {
 }
 
 func getManager() hyperion.Manager {
-	managerConfig := hyperion.ManagerConfig{Type: hyperion.ManagerTypeKubernetes}
-	// or alternatively one of the following:
-	//
-	// managerConfig := hyperonlib.ManagerConfig{
-	// 	Type:    hyperion.ManagerTypeMarathon,
-	// 	Address: "http://127.0.0.1:8080",
-	// }
-	// managerConfig := hyperonlib.ManagerConfig{
-	// 	Type:    hyperion.ManagerTypeDockerSwarm,
-	// 	Address: "http://127.0.0.1:2377",
-	// }
-	// managerConfig := hyperonlib.ManagerConfig{
-	// 	Type:    hyperion.ManagerTypeNomad
-	// 	Address: "http://127.0.0.1:4646",
-	// }
-
-	env := viper.GetString("env")
-	managerType := hyperion.ManagerType(viper.GetString(fmt.Sprintf("envs.%s.type", env)))
-	managerAddress := viper.GetString(fmt.Sprintf("envs.%s.address", env))
-	managerConfig = hyperion.ManagerConfig{Type: managerType, Address: managerAddress}
-
+	managerConfig := getManagerConfig()
 	manager, err := hyperion.NewManager(managerConfig)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error: %s\n", err)
 		os.Exit(1)
 	}
 	return manager
+}
+
+func getManagerConfig() hyperion.ManagerConfig {
+	env := viper.GetString("env")
+	envRootKey := fmt.Sprintf("envs.%s", env)
+	if viper.Get(envRootKey) == nil {
+		die("env was %q but there was no %q in config file: %s", env, envRootKey, viper.ConfigFileUsed())
+	}
+	managerType := viper.GetString(envRootKey + ".type")
+	managerAddress := viper.GetString(envRootKey + ".address")
+	return hyperion.ManagerConfig{Type: managerType, Address: managerAddress}
 }

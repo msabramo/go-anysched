@@ -20,6 +20,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
+	"git.corp.adobe.com/abramowi/hyperion"
 	"git.corp.adobe.com/abramowi/hyperion/core"
 	"git.corp.adobe.com/abramowi/hyperion/utils"
 )
@@ -31,8 +32,12 @@ type manager struct {
 	namespacesClient  tcorev1.NamespaceInterface
 }
 
+func init() {
+	hyperion.RegisterManagerType("kubernetes", NewManager)
+}
+
 // NewManager returns a Manager for Kubernetes.
-func NewManager(url string) (*manager, error) {
+func NewManager(url string) (hyperion.Manager, error) {
 	restConfig, err := configFromKubeconfig()
 	if err != nil {
 		return nil, err

@@ -47,6 +47,11 @@ var svcDeployCmd = &cobra.Command{
 			fmt.Fprintf(os.Stderr, "DeploySvc error: %s\n", err)
 			os.Exit(1)
 		}
+		if deployment == nil {
+			fmt.Fprintln(os.Stdout, "DeploySvc returned no error but deployment == nil")
+			os.Exit(0)
+		}
+
 		for key, val := range deployment.GetProperties() {
 			if key == "" || val == "" {
 				continue

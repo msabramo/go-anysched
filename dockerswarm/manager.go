@@ -9,6 +9,7 @@ import (
 	dockerclient "github.com/docker/docker/client"
 	"github.com/pkg/errors"
 
+	"git.corp.adobe.com/abramowi/hyperion"
 	"git.corp.adobe.com/abramowi/hyperion/core"
 )
 
@@ -19,8 +20,12 @@ type manager struct {
 	url    string
 }
 
+func init() {
+	hyperion.RegisterManagerType("dockerswarm", NewManager)
+}
+
 // NewManager returns a Manager for Docker Swarm.
-func NewManager(url string) (*manager, error) {
+func NewManager(url string) (hyperion.Manager, error) {
 	client, err := dockerclient.NewEnvClient()
 	if err != nil {
 		return nil, errors.Wrap(err, "dockerswarm.NewManager: dockerclient.NewEnvClient failed")

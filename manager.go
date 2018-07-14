@@ -1,9 +1,9 @@
 package hyperion
 
 import (
+	"fmt"
+
 	"git.corp.adobe.com/abramowi/hyperion/core"
-	"git.corp.adobe.com/abramowi/hyperion/kubernetes"
-	"git.corp.adobe.com/abramowi/hyperion/marathon"
 )
 
 // Manager manages various types of schedulers, such as Kubernetes, Marathon, etc.
@@ -19,55 +19,37 @@ type Manager interface {
 	TasksGetter
 }
 
+type newManagerFuncType func(managerAddress string) (Manager, error)
+
+var gRegistry = make(map[string]newManagerFuncType)
+
+func RegisterManagerType(managerType string, f newManagerFuncType) {
+	if _, alreadyExists := gRegistry[managerType]; alreadyExists {
+		panic(fmt.Sprintf("hyperion.RegisterManagerType: %q is already registered!", managerType))
+	}
+	gRegistry[managerType] = f
+	ManagerTypes = append(ManagerTypes, managerType)
+}
+
 // NewManager takes a ManagerConfig and returns a specific type of Manager for
 // the scheduler that the user requested (e.g.: Kubernetes, Marathon, etc.).
 func NewManager(managerConfig ManagerConfig) (manager Manager, err error) {
-	switch managerConfig.Type {
-	case ManagerTypeMarathon:
-		return marathon.NewManager(managerConfig.Address)
-	case ManagerTypeKubernetes:
-		return kubernetes.NewManager(managerConfig.Address)
-	// case ManagerTypeDockerSwarm:
-	// 	return dockerswarm.NewManager(managerConfig.Address)
-	// case ManagerTypeNomad:
-	// 	return nomad.NewManager(managerConfig.Address)
-	default:
+	newManagerFunc, ok := gRegistry[managerConfig.Type]
+	if !ok {
 		return nil, unknownAppManagerTypeError(managerConfig.Type)
 	}
+	return newManagerFunc(managerConfig.Address)
 }
 
 // ManagerConfig is a struct containing configuration info that a user passes to
 // the NewManager function.
 type ManagerConfig struct {
-	Type    ManagerType // e.g.: "marathon", "kubernetes", etc.
-	Address string      // e.g.: "http://127.0.0.1:8080"
+	Type    string // e.g.: "marathon", "kubernetes", etc.
+	Address string // e.g.: "http://127.0.0.1:8080"
 }
 
-// ManagerType represents the type of system we're managing apps on -- e.g.:
-// Marathon, Kubernetes, etc.
-type ManagerType string
-
-const (
-	// ManagerTypeMarathon is a const ManagerType (string) for Marathon.
-	ManagerTypeMarathon ManagerType = "marathon"
-
-	// ManagerTypeKubernetes is a const ManagerType (string) for Kubernetes.
-	ManagerTypeKubernetes ManagerType = "kubernetes"
-
-	// ManagerTypeDockerSwarm is a const ManagerType (string) for Docker Swarm.
-	ManagerTypeDockerSwarm ManagerType = "dockerswarm"
-
-	// ManagerTypeNomad is a const ManagerType (string) for Nomad.
-	ManagerTypeNomad ManagerType = "nomad"
-)
-
-// ManagerTypes is a slice with valid manager types
-var ManagerTypes = [...]ManagerType{
-	ManagerTypeMarathon,
-	ManagerTypeKubernetes,
-	ManagerTypeDockerSwarm,
-	ManagerTypeNomad,
-}
+// ManagerTypes is a slice with valid manager type names.
+var ManagerTypes = []string{}
 
 // Operation is an interface that abstracts operations excecuted by a Manager,
 // such as deploying or destroying a service in a scheduler.

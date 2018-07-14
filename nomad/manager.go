@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/nomad/api"
 	"github.com/pkg/errors"
 
+	"git.corp.adobe.com/abramowi/hyperion"
 	"git.corp.adobe.com/abramowi/hyperion/core"
 	"git.corp.adobe.com/abramowi/hyperion/utils"
 )
@@ -19,8 +20,12 @@ type manager struct {
 	url        string
 }
 
+func init() {
+	hyperion.RegisterManagerType("nomad", NewManager)
+}
+
 // NewManager returns a Manager for Kubernetes.
-func NewManager(url string) (*manager, error) {
+func NewManager(url string) (hyperion.Manager, error) {
 	config := &api.Config{Address: url}
 	client, err := api.NewClient(config)
 	if err != nil {

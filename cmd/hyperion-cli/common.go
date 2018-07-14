@@ -4,9 +4,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"os"
 
 	yaml "gopkg.in/yaml.v2"
 )
+
+func die(format string, a ...interface{}) {
+	fmt.Fprintf(os.Stderr, format+"\n", a...)
+	os.Exit(1)
+}
 
 func output(w io.Writer, data interface{}, format string, outputTable func(w io.Writer, data interface{}) error) error {
 	switch format {

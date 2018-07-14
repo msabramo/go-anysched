@@ -7,6 +7,7 @@ import (
 	goMarathon "github.com/gambol99/go-marathon"
 	"github.com/pkg/errors"
 
+	"git.corp.adobe.com/abramowi/hyperion"
 	"git.corp.adobe.com/abramowi/hyperion/core"
 )
 
@@ -23,8 +24,12 @@ type manager struct {
 	url              string
 }
 
+func init() {
+	hyperion.RegisterManagerType("marathon", NewManager)
+}
+
 // NewManager returns a Manager for Marathon.
-func NewManager(url string) (*manager, error) {
+func NewManager(url string) (hyperion.Manager, error) {
 	config := goMarathon.NewDefaultConfig()
 	config.URL = url
 	client, err := goMarathon.NewClient(config)
