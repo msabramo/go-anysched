@@ -47,7 +47,7 @@ test-race: ## Run tests with race detector
 	go test -race ./...
 
 lint: ## Run golint linter
-	golint $(shell go list ./...)
+	golint -set_exit_status $(shell go list ./...)
 
 vet: ## Run go vet linter
 	go vet $(shell go list ./...)
