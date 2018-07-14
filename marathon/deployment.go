@@ -31,11 +31,15 @@ func (d *deployment) GetProperties() (propertiesMap map[string]interface{}) {
 
 func (d *deployment) GetStatus() (status *core.OperationStatus, err error) {
 	opts := &goMarathon.GetAppOpts{
-		Embed: []string{"app.tasks", "app.counts", "app.deployments", "app.readiness", "app.lastTaskFailure", "app.taskStats"},
+		Embed: []string{
+			"app.tasks", "app.counts", "app.deployments",
+			"app.readiness", "app.lastTaskFailure", "app.taskStats",
+		},
 	}
 	goMarathonApp, err := d.manager.goMarathonClient.ApplicationBy(d.svcID, opts)
 	if err != nil {
-		return nil, errors.Wrapf(err, "marathon.deployment.GetStatus: goMarathonClient.ApplicationBy(%q) failed", d.svcID)
+		return nil, errors.Wrapf(err,
+			"marathon.deployment.GetStatus: goMarathonClient.ApplicationBy(%q) failed", d.svcID)
 	}
 
 	if !goMarathonApp.AllTaskRunning() {

@@ -124,5 +124,6 @@ func init() {
 	svcDeployCmd.Flags().StringVarP(&deploySettings.svcCfg.ID, "svc-id", "s", "", "ID for new service")
 	svcDeployCmd.Flags().StringVarP(&deploySettings.svcCfg.Image, "image", "i", "", "Docker image for new service")
 	svcDeployCmd.Flags().IntVarP(&deploySettings.svcCfg.Count, "count", "c", 1, "Number of containers to run")
-	svcDeployCmd.Flags().DurationVarP(&timeoutDuration, "timeout", "t", timeoutDuration, "Max time to wait for deploy to complete")
+	svcDeployCmd.Flags().DurationVarP(&timeoutDuration, "timeout", "t", timeoutDuration,
+		"Max time to wait for deploy to complete")
 }
