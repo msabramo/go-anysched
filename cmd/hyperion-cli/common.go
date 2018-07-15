@@ -11,7 +11,9 @@ import (
 )
 
 func die(format string, a ...interface{}) {
-	fmt.Fprintf(os.Stderr, dedent.Dedent(format)+"\n", a...)
+	if _, err := fmt.Fprintf(os.Stderr, dedent.Dedent(format)+"\n", a...); err != nil {
+		panic(err)
+	}
 	os.Exit(1)
 }
 
@@ -35,7 +37,9 @@ func outputYAML(w io.Writer, data interface{}) error {
 	if err != nil {
 		return err
 	}
-	w.Write(bytes)
+	if _, err = w.Write(bytes); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -44,6 +48,8 @@ func outputJSON(w io.Writer, data interface{}) error {
 	if err != nil {
 		return err
 	}
-	w.Write(bytes)
+	if _, err = w.Write(bytes); err != nil {
+		return err
+	}
 	return nil
 }

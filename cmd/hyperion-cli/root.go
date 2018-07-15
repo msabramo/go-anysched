@@ -55,7 +55,9 @@ func init() {
 	// will be global for your application.
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.hyperion-cli.yaml)")
 	rootCmd.PersistentFlags().StringP("env", "e", "", "environment to target")
-	viper.BindPFlag("env", rootCmd.PersistentFlags().Lookup("env"))
+	if err := viper.BindPFlag("env", rootCmd.PersistentFlags().Lookup("env")); err != nil {
+		panic(err)
+	}
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -83,7 +85,9 @@ func getManager() hyperion.Manager {
 	managerConfig := getManagerConfig()
 	manager, err := hyperion.NewManager(managerConfig)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "error: %s\n", err)
+		if _, err = fmt.Fprintf(os.Stderr, "error: %s\n", err); err != nil {
+			panic(err)
+		}
 		os.Exit(1)
 	}
 	return manager
