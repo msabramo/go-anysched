@@ -53,7 +53,7 @@ vet: ## Run go vet linter
 	go vet $(shell go list ./...)
 
 metalinter: ## Run gometalinter, which does a bunch of checks
-	@echo "Running: gometalinter --config=gometalinter.json"
+	@echo "Running: gometalinter --config=gometalinter.json ./..."
 	@gometalinter --config=gometalinter.json ./... && echo "All gometalinter checks passed!"
 
 test-cover-html: ## Generate test coverage report
