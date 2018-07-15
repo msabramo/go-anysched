@@ -31,6 +31,7 @@
     "interfacer",
     "lll",
     "nakedret",
+    "staticcheck",
     "vet"
   ],
 
