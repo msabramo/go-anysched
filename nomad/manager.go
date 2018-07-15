@@ -1,7 +1,6 @@
 package nomad
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/hashicorp/nomad/api"
@@ -11,8 +10,6 @@ import (
 	"git.corp.adobe.com/abramowi/hyperion/core"
 	"git.corp.adobe.com/abramowi/hyperion/utils"
 )
-
-var ctx = context.TODO()
 
 type manager struct {
 	client     *api.Client
