@@ -22,6 +22,7 @@
 
   "DisableAll": true,
   "Enable": [
+    "errcheck",
     "gas",
     "gocyclo",
     "gofmt",

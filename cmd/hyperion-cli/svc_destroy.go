@@ -34,13 +34,19 @@ var svcDestroyCmd = &cobra.Command{
 		ctx := context.Background()
 		operation, err := getManager().DestroySvc(svcID)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "DestroySvc error: %s\n", err)
+			_, err2 := fmt.Fprintf(os.Stderr, "DestroySvc error: %s\n", err)
+			if err2 != nil {
+				panic(err2)
+			}
 			os.Exit(1)
 		}
 		if operation != nil {
 			_, err = operation.Wait(ctx)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "error: %s\n", err)
+				_, err2 := fmt.Fprintf(os.Stderr, "error: %s\n", err)
+				if err2 != nil {
+					panic(err2)
+				}
 				os.Exit(1)
 			}
 		}

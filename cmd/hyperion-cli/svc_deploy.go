@@ -44,11 +44,17 @@ var svcDeployCmd = &cobra.Command{
 		manager := getManager()
 		deployment, err := manager.DeploySvc(deploySettings.svcCfg)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "DeploySvc error: %s\n", err)
+			_, err2 := fmt.Fprintf(os.Stderr, "DeploySvc error: %s\n", err)
+			if err2 != nil {
+				panic(err2)
+			}
 			os.Exit(1)
 		}
 		if deployment == nil {
-			fmt.Fprintln(os.Stdout, "DeploySvc returned no error but deployment == nil")
+			_, err2 := fmt.Fprintln(os.Stdout, "DeploySvc returned no error but deployment == nil")
+			if err2 != nil {
+				panic(err2)
+			}
 			os.Exit(0)
 		}
 
@@ -65,12 +71,18 @@ var svcDeployCmd = &cobra.Command{
 		for {
 			select {
 			case <-ctx.Done():
-				fmt.Fprintf(os.Stderr, "Deployment polling aborted after %v: %s\n", timeout, ctx.Err())
+				_, err2 := fmt.Fprintf(os.Stderr, "Deployment polling aborted after %v: %s\n", timeout, ctx.Err())
+				if err2 != nil {
+					panic(err2)
+				}
 				return
 			case <-time.After(1 * time.Second):
 				status, err := deployment.GetStatus()
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "GetStatus error: %s\n", err)
+					_, err2 := fmt.Fprintf(os.Stderr, "GetStatus error: %s\n", err)
+					if err2 != nil {
+						panic(err2)
+					}
 					if strings.Contains(err.Error(), "Not implemented") {
 						return
 					}
@@ -85,7 +97,10 @@ var svcDeployCmd = &cobra.Command{
 					elapsedTime := time.Since(startTime)
 					tasks, err := manager.SvcTasks(deploySettings.svcCfg)
 					if err != nil {
-						fmt.Fprintf(os.Stderr, "app deploy: SvcTasks error: %s\n", err)
+						_, err2 := fmt.Fprintf(os.Stderr, "app deploy: SvcTasks error: %s\n", err)
+						if err2 != nil {
+							panic(err2)
+						}
 						if strings.Contains(err.Error(), "Not implemented") {
 							return
 						}
@@ -94,7 +109,10 @@ var svcDeployCmd = &cobra.Command{
 					fmt.Printf("Deployment completed in %s\n\n", elapsedTime)
 					err = output(os.Stdout, tasks, viper.GetString("output_format"), outputTaskListTable)
 					if err != nil {
-						fmt.Fprintf(os.Stderr, "app list: task list output error: %s\n", err)
+						_, err2 := fmt.Fprintf(os.Stderr, "app list: task list output error: %s\n", err)
+						if err2 != nil {
+							panic(err2)
+						}
 						os.Exit(1)
 					}
 					return

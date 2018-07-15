@@ -33,13 +33,19 @@ var svcListCmd = &cobra.Command{
 		manager := getManager()
 		svcs, err := manager.Svcs()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "svc list: Svcs error: %s\n", err)
+			_, err2 := fmt.Fprintf(os.Stderr, "svc list: Svcs error: %s\n", err)
+			if err2 != nil {
+				panic(err2)
+			}
 			return
 		}
 
 		err = output(os.Stdout, svcs, viper.GetString("output_format"), outputSvcListTable)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "svc list: output error: %s\n", err)
+			_, err2 := fmt.Fprintf(os.Stderr, "svc list: output error: %s\n", err)
+			if err2 != nil {
+				panic(err2)
+			}
 			return
 		}
 	},
@@ -48,7 +54,9 @@ var svcListCmd = &cobra.Command{
 func outputSvcListTable(w io.Writer, data interface{}) error {
 	svcs := data.([]hyperion.Svc)
 	for _, svc := range svcs {
-		fmt.Fprintf(w, "%-40s\n", svc.ID)
+		if _, err := fmt.Fprintf(w, "%-40s\n", svc.ID); err != nil {
+			panic(err)
+		}
 	}
 	return nil
 }
@@ -57,5 +65,7 @@ func init() {
 	svcCmd.AddCommand(svcListCmd)
 
 	svcListCmd.Flags().StringP("output-format", "f", "yaml", `output format: "table", "yaml", "json"`)
-	viper.BindPFlag("output_format", taskListCmd.Flags().Lookup("output-format"))
+	if err := viper.BindPFlag("output_format", taskListCmd.Flags().Lookup("output-format")); err != nil {
+		panic(err)
+	}
 }

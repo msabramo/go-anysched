@@ -32,12 +32,18 @@ var taskListCmd = &cobra.Command{
 		manager := getManager()
 		tasks, err := manager.Tasks()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "task list: Tasks error: %s\n", err)
+			_, err2 := fmt.Fprintf(os.Stderr, "task list: Tasks error: %s\n", err)
+			if err2 != nil {
+				panic(err2)
+			}
 			return
 		}
 		err = output(os.Stdout, tasks, viper.GetString("output_format"), outputTaskListTable)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "task list: output error: %s\n", err)
+			_, err2 := fmt.Fprintf(os.Stderr, "task list: output error: %s\n", err)
+			if err2 != nil {
+				panic(err2)
+			}
 			return
 		}
 	},
@@ -46,7 +52,10 @@ var taskListCmd = &cobra.Command{
 func outputTaskListTable(w io.Writer, data interface{}) error {
 	tasks := data.([]hyperion.Task)
 	for _, task := range tasks {
-		fmt.Fprintf(w, "%-40s %-16s %-16s %s\n", task.Name, task.HostIP, task.TaskIP, task.ReadyTime)
+		_, err := fmt.Fprintf(w, "%-40s %-16s %-16s %s\n", task.Name, task.HostIP, task.TaskIP, task.ReadyTime)
+		if err != nil {
+			panic(err)
+		}
 	}
 	return nil
 }
@@ -55,5 +64,7 @@ func init() {
 	taskCmd.AddCommand(taskListCmd)
 
 	taskListCmd.Flags().StringP("output-format", "f", "yaml", `output format: "table", "yaml", "json"`)
-	viper.BindPFlag("output_format", taskListCmd.Flags().Lookup("output-format"))
+	if err := viper.BindPFlag("output_format", taskListCmd.Flags().Lookup("output-format")); err != nil {
+		panic(err)
+	}
 }
