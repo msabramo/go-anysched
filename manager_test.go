@@ -41,7 +41,8 @@ var _ = Describe("Marathon integration test", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(deployOperation).ToNot(BeNil())
 
-			deployOperation.Wait(ctx)
+			_, err = deployOperation.Wait(ctx)
+			Expect(err).ToNot(HaveOccurred())
 
 			time.Sleep(10 * time.Second)
 
