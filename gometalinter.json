@@ -31,6 +31,8 @@
     "goimports",
     "golint",
     "gosimple",
+    "gotype",
+    "gotypex",
     "interfacer",
     "lll",
     "nakedret",
