@@ -25,6 +25,7 @@
     "deadcode",
     "errcheck",
     "gas",
+    "goconst",
     "gocyclo",
     "gofmt",
     "goimports",
