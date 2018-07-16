@@ -33,6 +33,7 @@
     "gosimple",
     "gotype",
     "gotypex",
+    "ineffassign",
     "interfacer",
     "lll",
     "nakedret",
