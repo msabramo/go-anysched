@@ -52,7 +52,7 @@ type ManagerConfig struct {
 // ManagerTypes is a slice with valid manager type names.
 var ManagerTypes = []string{}
 
-// Operation is an interface that abstracts operations excecuted by a Manager,
+// Operation is an interface that abstracts operations executed by a Manager,
 // such as deploying or destroying a service in a scheduler.
 //
 // Operation has methods that allow client code to check the operation's status
