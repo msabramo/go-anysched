@@ -30,6 +30,7 @@
     "gofmt",
     "goimports",
     "golint",
+    "gosimple",
     "interfacer",
     "lll",
     "nakedret",
