@@ -36,6 +36,7 @@
     "ineffassign",
     "interfacer",
     "lll",
+    "misspell",
     "nakedret",
     "staticcheck",
     "vet"
