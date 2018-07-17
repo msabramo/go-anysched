@@ -1,54 +1,58 @@
-package hyperion
+package hyperion_test
 
 import (
-	"context"
-	"time"
-
-	"github.com/golang/mock/gomock"
+	"git.corp.adobe.com/abramowi/hyperion"
+	"git.corp.adobe.com/abramowi/hyperion/marathon"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Marathon integration test", func() {
-	var (
-		mockCtrl *gomock.Controller
-		ctx      = context.Background()
-	)
+var _ = Describe("manager.go", func() {
+	Context("a manager constructor function is registered under a type", func() {
+		var (
+			myNewManagerFuncCalled bool
+			receivedManagerAddress string
+			myNewManagerFunc       func(managerAddress string) (hyperion.Manager, error)
+		)
 
-	BeforeEach(func() {
-		mockCtrl = gomock.NewController(GinkgoT())
-	})
+		BeforeEach(func() {
+			myNewManagerFuncCalled = false
+			receivedManagerAddress = ""
 
-	AfterEach(func() {
-		mockCtrl.Finish()
-	})
-
-	Describe("deploying to Marathon", func() {
-		It("deploys a service to Marathon as a Marathon application", func() {
-			manager, err := NewManager(
-				ManagerConfig{
-					Type:    "marathon",
-					Address: "http://127.0.0.1:8080",
-				},
-			)
-			Expect(err).ToNot(HaveOccurred())
-			svc := SvcCfg{
-				ID:    "my-svc",
-				Image: "citizenstig/httpbin:latest",
-				Count: 2,
+			myNewManagerFunc = func(managerAddress string) (hyperion.Manager, error) {
+				myNewManagerFuncCalled = true
+				receivedManagerAddress = managerAddress
+				return marathon.NewManager(managerAddress)
 			}
-			deployOperation, err := manager.DeploySvc(svc)
-			Expect(err).ToNot(HaveOccurred())
-			Expect(deployOperation).ToNot(BeNil())
 
-			_, err = deployOperation.Wait(ctx)
-			Expect(err).ToNot(HaveOccurred())
+			hyperion.ClearRegistry()
+			hyperion.RegisterManagerType("foo", myNewManagerFunc)
+		})
 
-			time.Sleep(10 * time.Second)
+		Describe("RegisterManagerType", func() {
+			It("panics if trying to register an already registered manager type", func() {
+				Expect(func() { hyperion.RegisterManagerType("foo", myNewManagerFunc) }).To(Panic())
+			})
+		})
 
-			destroyOperation, err := manager.DestroySvc("my-svc")
-			Expect(err).ToNot(HaveOccurred())
-			Expect(destroyOperation).ToNot(BeNil())
+		Describe("NewManager", func() {
+			It("calls that function and returns a non-nil manager if that type is passed in", func() {
+				managerConfig := hyperion.ManagerConfig{Type: "foo", Address: "http://1.2.3.4:5678"}
+				manager, err := hyperion.NewManager(managerConfig)
+				Expect(myNewManagerFuncCalled).To(BeTrue())
+				Expect(receivedManagerAddress).To(Equal("http://1.2.3.4:5678"))
+				Expect(err).ToNot(HaveOccurred())
+				Expect(manager).ToNot(BeNil())
+			})
+
+			It("returns an error if an unknown type is passed in", func() {
+				managerConfig := hyperion.ManagerConfig{Type: "unknown_type", Address: "http://1.2.3.4:5678"}
+				manager, err := hyperion.NewManager(managerConfig)
+				Expect(myNewManagerFuncCalled).To(BeFalse())
+				Expect(receivedManagerAddress).To(Equal(""))
+				Expect(err).To(HaveOccurred())
+				Expect(manager).To(BeNil())
+			})
 		})
 	})
 })

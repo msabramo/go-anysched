@@ -23,6 +23,11 @@ type newManagerFuncType func(managerAddress string) (Manager, error)
 
 var gRegistry = make(map[string]newManagerFuncType)
 
+// ClearRegistry clears the manager type registry, which is probably only useful for tests.
+func ClearRegistry() {
+	gRegistry = make(map[string]newManagerFuncType)
+}
+
 // RegisterManagerType registers the name given by managerType with a NewManager function.
 func RegisterManagerType(managerType string, f newManagerFuncType) {
 	if _, alreadyExists := gRegistry[managerType]; alreadyExists {
