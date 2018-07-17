@@ -1,11 +1,5 @@
 package hyperion
 
-import (
-	"fmt"
-
-	"git.corp.adobe.com/abramowi/hyperion/core"
-)
-
 // Manager manages various types of schedulers, such as Kubernetes, Marathon, etc.
 // It is an interface that is composed of various other more fine-grained
 // interfaces, because fine-grained interfaces are awesome.
@@ -31,7 +25,7 @@ func ClearRegistry() {
 // RegisterManagerType registers the name given by managerType with a NewManager function.
 func RegisterManagerType(managerType string, f newManagerFuncType) {
 	if _, alreadyExists := gRegistry[managerType]; alreadyExists {
-		panic(fmt.Sprintf("hyperion.RegisterManagerType: %q is already registered!", managerType))
+		panic(appManagerTypeAlreadyRegisteredError(managerType))
 	}
 	gRegistry[managerType] = f
 	ManagerTypes = append(ManagerTypes, managerType)
@@ -42,7 +36,7 @@ func RegisterManagerType(managerType string, f newManagerFuncType) {
 func NewManager(managerConfig ManagerConfig) (manager Manager, err error) {
 	newManagerFunc, ok := gRegistry[managerConfig.Type]
 	if !ok {
-		return nil, unknownAppManagerTypeError(managerConfig.Type)
+		return nil, appManagerTypeUnknownError(managerConfig.Type)
 	}
 	return newManagerFunc(managerConfig.Address)
 }
@@ -56,34 +50,6 @@ type ManagerConfig struct {
 
 // ManagerTypes is a slice with valid manager type names.
 var ManagerTypes = []string{}
-
-// Operation is an interface that abstracts operations executed by a Manager,
-// such as deploying or destroying a service in a scheduler.
-//
-// Operation has methods that allow client code to check the operation's status
-// or wait for it to complete.
-//
-// Many methods of Manager will return an Operation.
-type Operation = core.Operation
-
-// Svc is short for "service" and it is our term for something that gets
-// scheduled or destroyed by a Manager
-// e.g.: a Marathon application, Kubernetes deployment, etc.
-// Svc is our abstract term that encompasses these types of things
-
-// SvcCfg is used to pass information to a Manager about how to configure a
-// service.
-//
-// In other words, it serves as an input to various Manager methods.
-type SvcCfg = core.SvcCfg
-
-// Svc contains information about a service, such as when it was started and
-// how many tasks are running.
-type Svc = core.Svc
-
-// Task contains information about an individual task, such as when it was
-// started and what IP addresses are assigned to it.
-type Task = core.Task
 
 // SvcsGetter is an interface with a method for getting all running services.
 type SvcsGetter interface {

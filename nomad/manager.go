@@ -3,11 +3,11 @@ package nomad
 import (
 	"fmt"
 
-	"github.com/hashicorp/nomad/api"
 	"github.com/pkg/errors"
 
+	"github.com/hashicorp/nomad/api"
+
 	"git.corp.adobe.com/abramowi/hyperion"
-	"git.corp.adobe.com/abramowi/hyperion/core"
 	"git.corp.adobe.com/abramowi/hyperion/utils"
 )
 
@@ -32,22 +32,22 @@ func NewManager(url string) (hyperion.Manager, error) {
 }
 
 // Svcs returns info about all running services.
-func (mgr *manager) Svcs() ([]core.Svc, error) {
+func (mgr *manager) Svcs() ([]hyperion.Svc, error) {
 	return nil, errors.New("nomad.manager.Svcs: Not implemented")
 }
 
 // SvcTasks returns info about the running tasks for a service.
-func (mgr *manager) SvcTasks(svcCfg core.SvcCfg) ([]core.Task, error) {
+func (mgr *manager) SvcTasks(svcCfg hyperion.SvcCfg) ([]hyperion.Task, error) {
 	return nil, errors.New("nomad.manager.SvcTasks: Not implemented")
 }
 
 // Tasks returns info about all running tasks.
-func (mgr *manager) Tasks() ([]core.Task, error) {
+func (mgr *manager) Tasks() ([]hyperion.Task, error) {
 	return nil, errors.New("nomad.manager.Tasks: Not implemented")
 }
 
 // DeploySvc takes a SvcCfg and deploys it, returning an Operation.
-func (mgr *manager) DeploySvc(svcCfg core.SvcCfg) (core.Operation, error) {
+func (mgr *manager) DeploySvc(svcCfg hyperion.SvcCfg) (hyperion.Operation, error) {
 	job := getJob(svcCfg)
 	jobRegisterResponse, writeMeta, err := mgr.jobsClient.Register(job, &api.WriteOptions{})
 	fmt.Printf("*** jobRegisterResponse = %+v; writeMeta = %+v; err = %+v\n", jobRegisterResponse, writeMeta, err)
@@ -58,7 +58,7 @@ func (mgr *manager) DeploySvc(svcCfg core.SvcCfg) (core.Operation, error) {
 }
 
 // DestroySvc destroys a service.
-func (mgr *manager) DestroySvc(svcID string) (core.Operation, error) {
+func (mgr *manager) DestroySvc(svcID string) (hyperion.Operation, error) {
 	purge := true
 	jobDeregisterResponse, writeMeta, err := mgr.jobsClient.Deregister(svcID, purge, &api.WriteOptions{})
 	fmt.Printf("*** jobDeregisterResponse = %+v; writeMeta = %+v; err = %+v\n", jobDeregisterResponse, writeMeta, err)
@@ -68,7 +68,7 @@ func (mgr *manager) DestroySvc(svcID string) (core.Operation, error) {
 	return nil, err
 }
 
-func getJob(svcCfg core.SvcCfg) *api.Job {
+func getJob(svcCfg hyperion.SvcCfg) *api.Job {
 	return &api.Job{
 		ID:          utils.Sptr(svcCfg.ID),
 		Name:        utils.Sptr(svcCfg.ID),

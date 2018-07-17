@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/pkg/errors"
+
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/swarm"
 	dockerclient "github.com/docker/docker/client"
-	"github.com/pkg/errors"
 
 	"git.corp.adobe.com/abramowi/hyperion"
-	"git.corp.adobe.com/abramowi/hyperion/core"
 )
 
 var ctx = context.TODO()
@@ -34,22 +34,22 @@ func NewManager(url string) (hyperion.Manager, error) {
 }
 
 // Svcs returns info about all running services.
-func (mgr *manager) Svcs() ([]core.Svc, error) {
+func (mgr *manager) Svcs() ([]hyperion.Svc, error) {
 	return nil, errors.New("dockerswarm.manager.Svcs: Not implemented")
 }
 
 // SvcTasks returns info about the running tasks for a service.
-func (mgr *manager) SvcTasks(svcCfg core.SvcCfg) ([]core.Task, error) {
+func (mgr *manager) SvcTasks(svcCfg hyperion.SvcCfg) ([]hyperion.Task, error) {
 	return nil, errors.New("dockerswarm.manager.SvcTasks: Not implemented")
 }
 
 // Tasks returns info about all running tasks.
-func (mgr *manager) Tasks() ([]core.Task, error) {
+func (mgr *manager) Tasks() ([]hyperion.Task, error) {
 	return nil, errors.New("dockerswarm.manager.Tasks: Not implemented")
 }
 
 // DeploySvc takes a SvcCfg and deploys it, returning an Operation.
-func (mgr *manager) DeploySvc(svcCfg core.SvcCfg) (core.Operation, error) {
+func (mgr *manager) DeploySvc(svcCfg hyperion.SvcCfg) (hyperion.Operation, error) {
 	count := uint64(svcCfg.Count)
 	service := swarm.ServiceSpec{
 		Annotations: swarm.Annotations{
@@ -76,7 +76,7 @@ func (mgr *manager) DeploySvc(svcCfg core.SvcCfg) (core.Operation, error) {
 }
 
 // DestroySvc destroys a service.
-func (mgr *manager) DestroySvc(svcID string) (core.Operation, error) {
+func (mgr *manager) DestroySvc(svcID string) (hyperion.Operation, error) {
 	err := mgr.client.ServiceRemove(ctx, svcID)
 	if err != nil {
 		return nil, errors.Wrap(err, "dockerswarm.manager.DestroySvc: mgr.client.ServiceRemove failed")

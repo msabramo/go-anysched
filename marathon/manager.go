@@ -8,7 +8,6 @@ import (
 	"github.com/pkg/errors"
 
 	"git.corp.adobe.com/abramowi/hyperion"
-	"git.corp.adobe.com/abramowi/hyperion/core"
 )
 
 var (
@@ -41,21 +40,21 @@ func NewManager(url string) (hyperion.Manager, error) {
 }
 
 // Svcs returns info about all running services.
-func (mgr *manager) Svcs() ([]core.Svc, error) {
+func (mgr *manager) Svcs() ([]hyperion.Svc, error) {
 	goMarathonAppsStruct, err := mgr.goMarathonClient.Applications(goMarathonEmbedTasks)
 	if err != nil {
 		return nil, errors.Wrap(err, "marathon.manager.Svcs: goMarathonClient.Svcs failed")
 	}
 	goMarathonAppsSlice := goMarathonAppsStruct.Apps
-	svcs := make([]core.Svc, len(goMarathonAppsSlice))
+	svcs := make([]hyperion.Svc, len(goMarathonAppsSlice))
 	for i, goMarathonApp := range goMarathonAppsSlice {
 		svcs[i] = svcFromMarathonApp(goMarathonApp)
 	}
 	return svcs, nil
 }
 
-func svcFromMarathonApp(goMarathonApp goMarathon.Application) core.Svc {
-	return core.Svc{
+func svcFromMarathonApp(goMarathonApp goMarathon.Application) hyperion.Svc {
+	return hyperion.Svc{
 		ID:             goMarathonApp.ID,
 		TasksRunning:   &goMarathonApp.TasksRunning,
 		TasksHealthy:   &goMarathonApp.TasksHealthy,
@@ -64,14 +63,14 @@ func svcFromMarathonApp(goMarathonApp goMarathon.Application) core.Svc {
 }
 
 // SvcTasks returns info about the running tasks for a service.
-func (mgr *manager) SvcTasks(svcCfg core.SvcCfg) ([]core.Task, error) {
+func (mgr *manager) SvcTasks(svcCfg hyperion.SvcCfg) ([]hyperion.Task, error) {
 	goMarathonTasksStruct, err := mgr.goMarathonClient.Tasks(svcCfg.ID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "marathon.manager.SvcTasks: goMarathonClient.Tasks(%q) failed", svcCfg.ID)
 	}
 
 	goMarathonTasksSlice := goMarathonTasksStruct.Tasks
-	ourTasks := make([]core.Task, len(goMarathonTasksSlice))
+	ourTasks := make([]hyperion.Task, len(goMarathonTasksSlice))
 	for i, goMarathonTask := range goMarathonTasksSlice {
 		ourTask, err := ourTaskForGoMarathonTask(goMarathonTask)
 		if err != nil {
@@ -83,14 +82,14 @@ func (mgr *manager) SvcTasks(svcCfg core.SvcCfg) ([]core.Task, error) {
 }
 
 // Tasks returns info about all running tasks.
-func (mgr *manager) Tasks() ([]core.Task, error) {
+func (mgr *manager) Tasks() ([]hyperion.Task, error) {
 	goMarathonTasksStruct, err := mgr.goMarathonClient.AllTasks(goMarathonDefaultAllTasksOpts)
 	if err != nil {
 		return nil, errors.Wrap(err, "marathon.manager.Tasks: goMarathonClient.AllTasks failed")
 	}
 
 	goMarathonTasksSlice := goMarathonTasksStruct.Tasks
-	ourTasks := make([]core.Task, len(goMarathonTasksSlice))
+	ourTasks := make([]hyperion.Task, len(goMarathonTasksSlice))
 	for i, goMarathonTask := range goMarathonTasksSlice {
 		ourTask, err := ourTaskForGoMarathonTask(goMarathonTask)
 		if err != nil {
@@ -101,7 +100,7 @@ func (mgr *manager) Tasks() ([]core.Task, error) {
 	return ourTasks, nil
 }
 
-func ourTaskForGoMarathonTask(goMarathonTask goMarathon.Task) (*core.Task, error) {
+func ourTaskForGoMarathonTask(goMarathonTask goMarathon.Task) (*hyperion.Task, error) {
 	taskStageTime, err := parseMarathonTime(goMarathonTask.StagedAt)
 	if err != nil {
 		return nil, err
@@ -114,7 +113,7 @@ func ourTaskForGoMarathonTask(goMarathonTask goMarathon.Task) (*core.Task, error
 	for i, goMarathonIPAddressStruct := range goMarathonTask.IPAddresses {
 		ipAddresses[i] = goMarathonIPAddressStruct.IPAddress
 	}
-	return &core.Task{
+	return &hyperion.Task{
 		Name:         goMarathonTask.ID,
 		AppID:        goMarathonTask.AppID,
 		HostName:     goMarathonTask.Host,
@@ -144,7 +143,7 @@ func parseMarathonTime(marathonTime string) (*time.Time, error) {
 }
 
 // DeploySvc takes a SvcCfg and deploys it, returning an Operation.
-func (mgr *manager) DeploySvc(svcCfg core.SvcCfg) (core.Operation, error) {
+func (mgr *manager) DeploySvc(svcCfg hyperion.SvcCfg) (hyperion.Operation, error) {
 	goMarathonApp, err := mgr.goMarathonClient.CreateApplication(goMarathonApp(svcCfg))
 	if err != nil {
 		return nil, errors.Wrap(err, "marathon.manager.DeploySvc: goMarathonClient.CreateApplication failed")
@@ -153,7 +152,7 @@ func (mgr *manager) DeploySvc(svcCfg core.SvcCfg) (core.Operation, error) {
 }
 
 // DestroySvc destroys a service.
-func (mgr *manager) DestroySvc(svcID string) (core.Operation, error) {
+func (mgr *manager) DestroySvc(svcID string) (hyperion.Operation, error) {
 	force := false
 	marathonDeploymentID, err := mgr.goMarathonClient.DeleteApplication(svcID, force)
 	if err != nil {
@@ -177,7 +176,7 @@ func (mgr *manager) newDeploymentFromGoMarathonApp(goMarathonApp *goMarathon.App
 	}
 }
 
-func goMarathonApp(svcCfg core.SvcCfg) *goMarathon.Application {
+func goMarathonApp(svcCfg hyperion.SvcCfg) *goMarathon.Application {
 	goMarathonApp := goMarathon.NewDockerApplication()
 	goMarathonApp.ID = svcCfg.ID
 	goMarathonApp.Container.Docker.Bridged()
