@@ -25,7 +25,7 @@ var _ = Describe("manager.go", func() {
 				return marathon.NewManager(managerAddress)
 			}
 
-			hyperion.ClearRegistry()
+			hyperion.ClearManagerTypeRegistry()
 			hyperion.RegisterManagerType("foo", myNewManagerFunc)
 		})
 

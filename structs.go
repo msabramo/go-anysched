@@ -1,9 +1,15 @@
 package hyperion
 
 import (
-	"context"
 	"time"
 )
+
+// ManagerConfig is a struct containing configuration info that a user passes to
+// the NewManager function.
+type ManagerConfig struct {
+	Type    string // e.g.: "marathon", "kubernetes", etc.
+	Address string // e.g.: "http://127.0.0.1:8080"
+}
 
 // Svc is short for "service" and it is our term for something that gets
 // scheduled or destroyed by a Manager
@@ -60,23 +66,4 @@ type Task struct {
 	LastHealthyTime     *time.Time `yaml:"last-healthy-time,omitempty" json:"last-healthy-time,omitempty"`
 	State               string     `yaml:"state,omitempty" json:"state,omitempty"`
 	Version             string     `yaml:"version,omitempty" json:"version,omitempty"`
-}
-
-// Operation is an interface that abstracts operations executed by a Manager,
-// such as deploying or destroying a service in a scheduler.
-//
-// Operation has methods that allow client code to check the operation's status
-// or wait for it to complete.
-//
-// Many methods of Manager will return an Operation.
-type Operation interface {
-	// GetProperties returns a map with all labels, annotations, and basic
-	// properties like name or uid
-	GetProperties() map[string]interface{}
-
-	// Wait waits for an operation to finish and return error or nil
-	Wait(ctx context.Context) (result interface{}, err error)
-
-	// GetStatus is for polling the status of the deployment
-	GetStatus() (status *OperationStatus, err error)
 }
