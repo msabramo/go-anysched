@@ -22,8 +22,14 @@ $(HYPERIONCLI_BIN): ## Build hyperion-cli
 	CLICOLOR=1 ls -l $(HYPERIONCLI_BIN)
 
 cli-smoketest: ## Quickly exercise hyperion-cli for Marathon and Kubernetes
-	HYPERIONCLI_ENV=local_marathon $(MAKE) _cli-smoketest
+	$(MAKE) cli-smoketest-marathon
 	@echo; echo
+	$(MAKE) cli-smoketest-kubernetes
+
+cli-smoketest-marathon: ## Quickly exercise hyperion-cli for Marathon
+	HYPERIONCLI_ENV=local_marathon $(MAKE) _cli-smoketest
+
+cli-smoketest-kubernetes: ## Quickly exercise hyperion-cli for Marathon
 	HYPERIONCLI_ENV=kubeconfig $(MAKE) _cli-smoketest
 
 _cli-smoketest: $(HYPERIONCLI_BIN)
