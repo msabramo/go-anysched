@@ -25,15 +25,18 @@ make -C examples run-deploy-example
 This repo also comes with a CLI that allows you to exercise some of the
 library's features.
 
-Run `make build` and a binary will be built called `bin/hyperion-cli`. You can
-run it to get help:
+Run `make build` and a binary will be built called `bin/hyperion-cli`:
 
 ```
 $ make build
 go build -o bin/hyperion-cli ./cmd/hyperion-cli
 CLICOLOR=1 ls -l bin/hyperion-cli
 -rwxr-xr-x  1 abramowi  staff  44578428 Jul 17 16:26 bin/hyperion-cli
+```
 
+You can run it to get help:
+
+```
 $ bin/hyperion-cli
 A command that demos the hyperion library, allowing the user
 to deploy services to Marathon, Kubernetes, etc.
