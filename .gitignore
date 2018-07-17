@@ -1,5 +1,5 @@
 # Binaries for programs and plugins
-/hyperion-cli
+bin/
 *.exe
 *.dll
 *.so
@@ -10,7 +10,6 @@
 
 # Coverage-related files
 coverage/
-cobertura-coverage.xml
 *.out
 
 # Project-local glide cache, RE: https://github.com/Masterminds/glide/issues/736

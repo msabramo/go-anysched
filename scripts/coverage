@@ -24,12 +24,6 @@ gocover-cobertura < coverage/total.coverprofile \
     | sed -e 's#git.corp.adobe.com/abramowi/hyperion/##g' > $COBERTURA_XML_FILE
 ls -l $COBERTURA_XML_FILE
 
-# Copy Cobertura file to where XXX plugin expects it to be
-# If we continue to use this plugin, we might just make this the one place
-# where the file lives, but I don't want to break old Jenkins jobs on mc-prod
-# ...
-cp $COBERTURA_XML_FILE cobertura-coverage.xml
-
 exit 0
 
 echo; echo "Running diff-cover..."
