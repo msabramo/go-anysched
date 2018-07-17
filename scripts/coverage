@@ -1,0 +1,43 @@
+#!/bin/bash
+
+set -o errexit
+set -o pipefail
+
+COBERTURA_XML_FILE="coverage/total-cobertura.xml"
+DIFF_COVER_FAIL_UNDER_PERCENT=80
+
+mkdir -p coverage
+
+time go test -cover -coverprofile coverage/total.coverprofile $(go list -f '{{.ImportPath}}' ./...) \
+    | awk '$1 != "?" { \
+          gsub("git.corp.adobe.com/abramowi/hyperion", ".", $2); \
+          printf("%-7s %-40s %8s %s %6s %s %s %s %s\n", $1, $2, $3, $4, $5, $6, $7, $8, $9) \
+      }'
+
+# Output total coverage
+go tool cover -func=coverage/total.coverprofile | awk '/^total:/ { print "Total code coverage:", $3 }'
+
+# Convert Golang coverprofile to Cobertura XML (which can be consumed by Jenkins plugins)
+go get github.com/msabramo/gocover-cobertura
+echo; echo "Generating coverage/total-cobertura.xml (Cobertura XML file)"
+gocover-cobertura < coverage/total.coverprofile \
+    | sed -e 's#git.corp.adobe.com/abramowi/hyperion/##g' > $COBERTURA_XML_FILE
+ls -l $COBERTURA_XML_FILE
+
+# Copy Cobertura file to where XXX plugin expects it to be
+# If we continue to use this plugin, we might just make this the one place
+# where the file lives, but I don't want to break old Jenkins jobs on mc-prod
+# ...
+cp $COBERTURA_XML_FILE cobertura-coverage.xml
+
+exit 0
+
+echo; echo "Running diff-cover..."
+
+# Use diff-cover to report coverage info about added/changed lines
+if git remote | grep -q upstream; then
+    DIFF_COVER_COMPARE_BRANCH="upstream/master"
+else
+    DIFF_COVER_COMPARE_BRANCH="origin/master"
+fi
+diff-cover --compare-branch=$DIFF_COVER_COMPARE_BRANCH --fail-under=$DIFF_COVER_FAIL_UNDER_PERCENT $COBERTURA_XML_FILE
