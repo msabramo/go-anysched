@@ -12,7 +12,7 @@ TEST_APP_COUNT      = 1
 .DEFAULT_GOAL := help
 
 clean: ## Clean up files that aren't checked into version control
-	go clean
+	go clean -cache -testcache
 	$(RM) $(BINARIES)
 
 build: $(HYPERIONCLI_BIN) ## Build all the things
