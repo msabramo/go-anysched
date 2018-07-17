@@ -50,8 +50,8 @@ func NewManager(url string) (hyperion.Manager, error) {
 	mgr := &manager{
 		clientset:         clientset,
 		deploymentsClient: clientset.AppsV1().Deployments(apiv1.NamespaceDefault),
-		podsClient:        clientset.CoreV1().Pods(apiv1.NamespaceDefault),
 		namespacesClient:  clientset.CoreV1().Namespaces(),
+		podsClient:        clientset.CoreV1().Pods(apiv1.NamespaceDefault),
 	}
 	return mgr, nil
 }

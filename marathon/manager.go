@@ -34,7 +34,7 @@ func NewManager(url string) (hyperion.Manager, error) {
 	config.URL = url
 	client, err := goMarathon.NewClient(config)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "marathon.NewManager: goMarathon.NewClient failed")
 	}
 	mgr := &manager{goMarathonClient: client, url: url}
 	return mgr, nil
