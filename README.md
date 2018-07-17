@@ -68,5 +68,28 @@ bin/hyperion-cli svc deploy --svc-id=httpbin --image=citizenstig/httpbin:latest 
 bin/hyperion-cli svc destroy --svc-id=httpbin
 ```
 
+## Unit tests
+
+Run `make test`.
+
+```
+$ make test
+go test ./...
+ok  	git.corp.adobe.com/abramowi/hyperion	0.049s
+?   	git.corp.adobe.com/abramowi/hyperion/cmd/hyperion-cli	[no test files]
+ok  	git.corp.adobe.com/abramowi/hyperion/dockerswarm	0.040s
+?   	git.corp.adobe.com/abramowi/hyperion/examples	[no test files]
+ok  	git.corp.adobe.com/abramowi/hyperion/kubernetes	0.048s
+ok  	git.corp.adobe.com/abramowi/hyperion/marathon	0.042s
+ok  	git.corp.adobe.com/abramowi/hyperion/nomad	0.041s
+ok  	git.corp.adobe.com/abramowi/hyperion/utils	0.042s
+```
+
+## Integration tests
+
+If you have both Marathon and Kubernetes running, then you can run `make
+cli-smoketest`. This uses `bin/hyperion-cli` to deploy and destroy a service,
+and it will do it in both Marathon and Kubernetes.
+
 
 [examples]: examples
