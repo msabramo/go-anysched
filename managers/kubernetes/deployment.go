@@ -69,6 +69,10 @@ func (dep deployment) GetStatus() (status *hyperion.OperationStatus, err error) 
 	if err != nil {
 		return nil, errors.Wrap(err, "kubernetes.deployment.GetStatus: deploymentsClient.Get failed")
 	}
+	return getStatusOfK8sDeployment(k8sDeployment)
+}
+
+func getStatusOfK8sDeployment(k8sDeployment *appsv1.Deployment) (*hyperion.OperationStatus, error) {
 	if k8sDeployment.Generation <= k8sDeployment.Status.ObservedGeneration {
 		if deploymentExceededProgressDeadline(k8sDeployment) {
 			return nil, deploymentExceededProgressDeadlineError(k8sDeployment)
