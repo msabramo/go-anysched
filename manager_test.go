@@ -2,7 +2,7 @@ package hyperion_test
 
 import (
 	"git.corp.adobe.com/abramowi/hyperion"
-	"git.corp.adobe.com/abramowi/hyperion/marathon"
+	"git.corp.adobe.com/abramowi/hyperion/managers/marathon"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

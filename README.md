@@ -78,14 +78,14 @@ Run `make test`.
 ```
 $ make test
 go test ./...
-ok  	git.corp.adobe.com/abramowi/hyperion	0.049s
+ok  	git.corp.adobe.com/abramowi/hyperion	0.037s
 ?   	git.corp.adobe.com/abramowi/hyperion/cmd/hyperion-cli	[no test files]
-ok  	git.corp.adobe.com/abramowi/hyperion/dockerswarm	0.040s
 ?   	git.corp.adobe.com/abramowi/hyperion/examples	[no test files]
-ok  	git.corp.adobe.com/abramowi/hyperion/kubernetes	0.048s
-ok  	git.corp.adobe.com/abramowi/hyperion/marathon	0.042s
-ok  	git.corp.adobe.com/abramowi/hyperion/nomad	0.041s
-ok  	git.corp.adobe.com/abramowi/hyperion/utils	0.042s
+ok  	git.corp.adobe.com/abramowi/hyperion/managers/dockerswarm	0.042s
+ok  	git.corp.adobe.com/abramowi/hyperion/managers/kubernetes	0.070s
+ok  	git.corp.adobe.com/abramowi/hyperion/managers/marathon	0.037s
+ok  	git.corp.adobe.com/abramowi/hyperion/managers/nomad	0.037s
+ok  	git.corp.adobe.com/abramowi/hyperion/utils	0.075s
 ```
 
 ## Integration tests

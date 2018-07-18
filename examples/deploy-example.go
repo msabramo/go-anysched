@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"git.corp.adobe.com/abramowi/hyperion"
-	_ "git.corp.adobe.com/abramowi/hyperion/kubernetes"
+	_ "git.corp.adobe.com/abramowi/hyperion/managers/kubernetes"
 )
 
 func doStuff() error {
@@ -45,7 +45,10 @@ func doStuff() error {
 func main() {
 	err := doStuff()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "err: %s\n", err)
+		_, err = fmt.Fprintf(os.Stderr, "err: %s\n", err)
+		if err != nil {
+			panic(err)
+		}
 		os.Exit(1)
 	}
 }

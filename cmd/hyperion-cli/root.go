@@ -22,10 +22,10 @@ import (
 	"github.com/spf13/viper"
 
 	"git.corp.adobe.com/abramowi/hyperion"
-	_ "git.corp.adobe.com/abramowi/hyperion/dockerswarm"
-	_ "git.corp.adobe.com/abramowi/hyperion/kubernetes"
-	_ "git.corp.adobe.com/abramowi/hyperion/marathon"
-	_ "git.corp.adobe.com/abramowi/hyperion/nomad"
+	_ "git.corp.adobe.com/abramowi/hyperion/managers/dockerswarm"
+	_ "git.corp.adobe.com/abramowi/hyperion/managers/kubernetes"
+	_ "git.corp.adobe.com/abramowi/hyperion/managers/marathon"
+	_ "git.corp.adobe.com/abramowi/hyperion/managers/nomad"
 )
 
 var cfgFile string
