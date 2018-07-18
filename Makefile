@@ -8,7 +8,7 @@ TEST_APP_NAME       = hyperion-cli-test-$(shell date +'%Y%m%d%H%M%S')
 TEST_APP_IMAGE      = k8s.gcr.io/echoserver:1.4
 TEST_APP_COUNT      = 1
 
-.PHONY: clean build cli-smoketest check lint test test-cover test-cover-html test-race vet html help
+.PHONY: clean build cli-smoketest check lint test test-cover test-cover-html test-race top-cyclo vet html help
 .DEFAULT_GOAL := help
 
 clean: ## Clean up files that aren't checked into version control
@@ -67,6 +67,9 @@ lint: ## Run golint linter
 
 vet: ## Run go vet linter
 	go vet $(shell go list ./...)
+
+top-cyclo: ## Display function with most cyclomatic complexity
+	gocyclo -top 10 $(shell find . \( -name vendor -o -name .git -o -name bin \) -prune -o -type d -print)
 
 metalinter: ## Run gometalinter, which does a bunch of checks
 	@echo "Running: gometalinter --config=gometalinter.json ./..."
