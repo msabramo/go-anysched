@@ -70,22 +70,48 @@ func (dep deployment) GetStatus() (status *hyperion.OperationStatus, err error) 
 		return nil, errors.Wrap(err, "kubernetes.deployment.GetStatus: deploymentsClient.Get failed")
 	}
 	if k8sDeployment.Generation <= k8sDeployment.Status.ObservedGeneration {
-		cond := getDeploymentCondition(k8sDeployment.Status, appsv1.DeploymentProgressing)
-		if cond != nil && cond.Reason == timedOutReason {
-			return nil, fmt.Errorf("deployment %q exceeded its progress deadline", dep.GetName())
+		if deploymentExceededProgressDeadline(k8sDeployment) {
+			return nil, deploymentExceededProgressDeadlineError(k8sDeployment)
 		}
-		if k8sDeployment.Spec.Replicas != nil && k8sDeployment.Status.UpdatedReplicas < *k8sDeployment.Spec.Replicas {
+		if notAllReplicasUpdated(k8sDeployment) {
 			return notAllReplicasUpdatedStatus(k8sDeployment), nil
 		}
-		if k8sDeployment.Status.Replicas > k8sDeployment.Status.UpdatedReplicas {
+		if oldReplicasPendingTermination(k8sDeployment) {
 			return oldReplicasPendingTerminationStatus(k8sDeployment), nil
 		}
-		if k8sDeployment.Status.AvailableReplicas < k8sDeployment.Status.UpdatedReplicas {
+		if notAllReplicasAvailable(k8sDeployment) {
 			return notAllReplicasAvailableStatus(k8sDeployment), nil
 		}
 		return deploymentSuccessStatus(k8sDeployment), nil
 	}
 	return deploymentSpecUpdateNotObservedStatus(k8sDeployment), nil
+}
+
+func (dep deployment) isDone() bool {
+	status, err := dep.GetStatus()
+	return err == nil && status.Done
+}
+
+func deploymentExceededProgressDeadline(k8sDeployment *appsv1.Deployment) bool {
+	cond := getDeploymentCondition(k8sDeployment.Status, appsv1.DeploymentProgressing)
+	return cond != nil && cond.Reason == timedOutReason
+}
+
+func deploymentExceededProgressDeadlineError(k8sDeployment *appsv1.Deployment) error {
+	return fmt.Errorf("deployment %q exceeded its progress deadline", k8sDeployment.GetName())
+}
+
+func notAllReplicasUpdated(k8sDeployment *appsv1.Deployment) bool {
+	return k8sDeployment.Spec.Replicas != nil &&
+		k8sDeployment.Status.UpdatedReplicas < *k8sDeployment.Spec.Replicas
+}
+
+func oldReplicasPendingTermination(k8sDeployment *appsv1.Deployment) bool {
+	return k8sDeployment.Status.Replicas > k8sDeployment.Status.UpdatedReplicas
+}
+
+func notAllReplicasAvailable(k8sDeployment *appsv1.Deployment) bool {
+	return k8sDeployment.Status.AvailableReplicas < k8sDeployment.Status.UpdatedReplicas
 }
 
 // getDeploymentCondition returns the condition with the provided type.
@@ -196,10 +222,8 @@ func (dep deployment) Wait(ctx context.Context) (result interface{}, err error) 
 			if err != nil {
 				return nil, errors.Wrap(err, "kubernetes.deployment.Wait: deploymentsClient.Get failed")
 			}
-			if k8sDeployment.Status.ObservedGeneration == k8sDeployment.Generation {
-				if k8sDeployment.Status.AvailableReplicas == k8sDeployment.Status.UpdatedReplicas {
-					return deployment{manager: dep.manager, Deployment: k8sDeployment, svcCfg: dep.svcCfg}, nil
-				}
+			if dep.isDone() {
+				return deployment{manager: dep.manager, Deployment: k8sDeployment, svcCfg: dep.svcCfg}, nil
 			}
 		}
 	}
