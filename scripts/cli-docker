@@ -1,0 +1,8 @@
+#!/bin/sh
+
+if ! docker images 2> /dev/null | grep -q hyperion-cli; then
+    echo "Building docker image..."
+    docker build -t hyperion-cli .
+fi
+
+exec docker run -v $(pwd)/hyperion-cli.yaml:/workdir/hyperion-cli.yaml -v ~/.kube:/root/.kube -it --rm hyperion-cli "$@"

@@ -1,8 +1,8 @@
 # output_format: table
 # output_format: yaml
 
-env: local_marathon
-# env: kubeconfig
+# env: local_marathon
+env: kubeconfig
 
 envs:
   kubeconfig:
