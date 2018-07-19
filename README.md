@@ -88,6 +88,27 @@ ok  	git.corp.adobe.com/abramowi/hyperion/managers/nomad	0.037s
 ok  	git.corp.adobe.com/abramowi/hyperion/utils	0.075s
 ```
 
+## Unit test coverage
+
+```
+$ make test-cover
+scripts/coverage
+ok      .                                          0.128s coverage: 100.0% of statements
+ok      ./managers/dockerswarm                     0.064s coverage:  20.0% of statements
+ok      ./managers/kubernetes                      0.106s coverage:  10.8% of statements
+ok      ./managers/marathon                        0.042s coverage:   8.1% of statements
+ok      ./managers/nomad                           0.050s coverage:  27.3% of statements
+ok      ./utils                                    0.042s coverage: 100.0% of statements
+
+real	0m17.414s
+user	0m10.922s
+sys	0m6.477s
+Total code coverage: 18.7%
+
+Generating coverage/total-cobertura.xml (Cobertura XML file)
+-rw-r--r--  1 abramowi  staff  71512 Jul 19 09:14 coverage/total-cobertura.xml
+```
+
 ## Integration tests
 
 If you have Marathon running, then you can run `make cli-smoketest-marathon`:
@@ -172,6 +193,28 @@ Service "hyperion-cli-test-20180717164028" deleted.
 
 If you have both Marathon and Kubernetes running, then you can run `make
 cli-smoketest`. This will run the above tests for both Marathon and Kubernetes.
+
+## More make targets
+
+The `Makefile` is self-documenting. Running `make` with no target will print a list of targets:
+
+```
+$ make
+build                          Build all the things
+check                          Run tests and linters
+clean                          Clean up files that aren't checked into version control
+cli-smoketest-kubernetes       Quickly exercise hyperion-cli for Marathon
+cli-smoketest-marathon         Quickly exercise hyperion-cli for Marathon
+cli-smoketest                  Quickly exercise hyperion-cli for Marathon and Kubernetes
+lint                           Run golint linter
+metalinter                     Run gometalinter, which does a bunch of checks
+test-cover-html                Generate HTML test coverage report
+test-cover                     Generate test coverage report
+test-race                      Run tests with race detector
+test                           Run tests
+top-cyclo                      Display function with most cyclomatic complexity
+vet                            Run go vet linter
+```
 
 
 [examples]: examples

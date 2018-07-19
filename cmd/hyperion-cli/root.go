@@ -53,7 +53,8 @@ func init() {
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.hyperion-cli.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "",
+		"config file (default is to look for hyperion-cli.yaml in ~/.config/hyperion-cli/, ./, and ./etc/)")
 	rootCmd.PersistentFlags().StringP("env", "e", "", "environment to target")
 	if err := viper.BindPFlag("env", rootCmd.PersistentFlags().Lookup("env")); err != nil {
 		panic(err)
