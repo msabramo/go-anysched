@@ -216,6 +216,52 @@ top-cyclo                      Display function with most cyclomatic complexity
 vet                            Run go vet linter
 ```
 
+## CLI Docker image
+
+If you don't have Go installed or have trouble building from source, you can
+try using Docker. There is a script called `scripts/cli-docker` that will
+automatically build the Docker image if you don't already have it and then run
+a container using it. Example:
+
+```
+$ scripts/cli-docker svc deploy --svc-id=httpbin --image=citizenstig/httpbin:latest --count=3
+Building docker image...
+Sending build context to Docker daemon  360.4kB
+Step 1/11 : FROM golang:alpine AS build-env
+ ---> 34d3217973fd
+Step 2/11 : RUN apk add --update git
+ ---> Running in f2fa64a62f5b
+...
+Using config file: /workdir/hyperion-cli.yaml
+name                           : httpbin
+selfLink                       : /apis/apps/v1/namespaces/default/deployments/httpbin
+spec.strategy                  : {RollingUpdate &RollingUpdateDeployment{MaxUnavailable:25%,MaxSurge:25%,}}
+resourceVersion                : 30081
+uid                            : 096f040b-8c4c-11e8-a0ad-080027aa669d
+creationTimestamp              : 2018-07-20T18:38:03Z
+namespace                      : default
+generation                     : 1
+
+[2018-07-20T18:38:03Z] Waiting for deployment "httpbin" to finish: 0 of 3 updated replicas are available...
+[2018-07-20T18:38:06Z] Waiting for deployment "httpbin" to finish: 1 of 3 updated replicas are available...
+[2018-07-20T18:38:07Z] Waiting for deployment "httpbin" to finish: 2 of 3 updated replicas are available...
+[2018-07-20T18:38:09Z] Deployment "httpbin" successfully rolled out. 3 of 3 updated replicas are available.
+Deployment completed in 6.323958015s
+
+- name: httpbin-5d7c976bcd-9kjz5
+  host-ip: 10.0.2.15
+  task-ip: 172.17.0.4
+  ready-time: 2018-07-20T18:38:05Z
+- name: httpbin-5d7c976bcd-wmsvl
+  host-ip: 10.0.2.15
+  task-ip: 172.17.0.5
+  ready-time: 2018-07-20T18:38:07Z
+- name: httpbin-5d7c976bcd-xn6dx
+  host-ip: 10.0.2.15
+  task-ip: 172.17.0.6
+  ready-time: 2018-07-20T18:38:09Z
+```
+
 
 [examples]: examples
 [minikube]: https://github.com/kubernetes/minikube
