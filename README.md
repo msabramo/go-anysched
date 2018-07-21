@@ -219,8 +219,9 @@ vet                            Run go vet linter
 ## CLI Docker image
 
 If you don't have Go installed or have trouble building from source, you can
-try using Docker. There is a script called `scripts/cli-docker` that will
-automatically build the Docker image if you don't already have it and then run
+try using Docker. There is a script called
+[`scripts/cli-docker`](scripts/cli-docker) that will automatically build the
+Docker image if you don't already have it and then run
 a container using it. Example:
 
 ```
