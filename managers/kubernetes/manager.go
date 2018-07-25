@@ -40,10 +40,10 @@ func NewManager(url string) (hyperion.Manager, error) {
 		restConfig *rest.Config
 		err        error
 	)
-	if url != "" {
-		restConfig, err = configFromURL(url)
-	} else {
+	if url == "" || url == "kubeconfig" {
 		restConfig, err = configFromKubeconfig()
+	} else {
+		restConfig, err = configFromURL(url)
 	}
 	if err != nil {
 		return nil, err
