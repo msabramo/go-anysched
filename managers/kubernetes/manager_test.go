@@ -30,8 +30,47 @@ var _ = Describe("kubernetes/manager.go", func() {
 			Expect(manager).To(BeNil())
 		})
 
-		It("fails with an invalid kubeconfig file", func() {
+		It("fails with a non-existent kubeconfig file", func() {
 			manager, err := NewManager("/dev/does-not-exist")
+			Expect(err).To(HaveOccurred())
+			Expect(manager).To(BeNil())
+		})
+
+		It("fails with KUBECONFIG set to a non-existent kubeconfig file", func() {
+			oldKubeConfig := os.Getenv("KUBECONFIG")
+			os.Setenv("KUBECONFIG", "/dev/does-not-exist")
+			defer func() { os.Setenv("KUBECONFIG", oldKubeConfig) }()
+			manager, err := NewManager("")
+			Expect(err).To(HaveOccurred())
+			Expect(manager).To(BeNil())
+		})
+
+		It("fails with a garbage kubeconfig file 1", func() {
+			manager, err := NewManager("/dev/null")
+			Expect(err).To(HaveOccurred())
+			Expect(manager).To(BeNil())
+		})
+
+		It("fails with KUBECONFIG set to a garbage kubeconfig file 1", func() {
+			oldKubeConfig := os.Getenv("KUBECONFIG")
+			os.Setenv("KUBECONFIG", "/dev/null")
+			defer func() { os.Setenv("KUBECONFIG", oldKubeConfig) }()
+			manager, err := NewManager("")
+			Expect(err).To(HaveOccurred())
+			Expect(manager).To(BeNil())
+		})
+
+		It("fails with a garbage kubeconfig file 2", func() {
+			manager, err := NewManager("/etc/passwd")
+			Expect(err).To(HaveOccurred())
+			Expect(manager).To(BeNil())
+		})
+
+		It("fails with KUBECONFIG set to a garbage kubeconfig file 2", func() {
+			oldKubeConfig := os.Getenv("KUBECONFIG")
+			os.Setenv("KUBECONFIG", "/etc/passwd")
+			defer func() { os.Setenv("KUBECONFIG", oldKubeConfig) }()
+			manager, err := NewManager("")
 			Expect(err).To(HaveOccurred())
 			Expect(manager).To(BeNil())
 		})
