@@ -9,6 +9,10 @@ envs:
     type:    kubernetes
     address: kubeconfig
 
+  minikube:
+    type:    kubernetes
+    address: https://192.168.99.100:8443
+
   local_marathon:
     type:    marathon
     address: http://127.0.0.1:8080

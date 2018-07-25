@@ -50,10 +50,10 @@ _cli-smoketest: $(HYPERIONCLI_BIN)
 check: test-race vet lint ## Run tests and linters
 
 test: ## Run tests
-	go test ./...
+	HYPERIONCLI_ENV=minikube go test ./...
 
 test-cover: ## Generate test coverage report
-	scripts/coverage
+	HYPERIONCLI_ENV=minikube scripts/coverage
 
 test-cover-html: ## Generate HTML test coverage report
 	go test -coverprofile=coverage.out -covermode=count

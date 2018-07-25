@@ -1,7 +1,6 @@
 package kubernetes
 
 import (
-	"flag"
 	"os"
 	"path/filepath"
 	"sort"
@@ -37,7 +36,15 @@ func init() {
 
 // NewManager returns a Manager for Kubernetes.
 func NewManager(url string) (hyperion.Manager, error) {
-	restConfig, err := configFromKubeconfig()
+	var (
+		restConfig *rest.Config
+		err        error
+	)
+	if url != "" {
+		restConfig, err = configFromURL(url)
+	} else {
+		restConfig, err = configFromKubeconfig()
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -64,26 +71,20 @@ func configFromKubeconfig() (*rest.Config, error) {
 	return config, nil
 }
 
-func getKubeconfig() string {
-	var kubeconfig *string
-
-	defaultKubeconfigFilePath := getDefaultKubeconfigFilePath(os.Getenv("HOME"))
-	if defaultKubeconfigFilePath != "" {
-		kubeconfig = flag.String("kubeconfig", defaultKubeconfigFilePath, "(optional) absolute path to the kubeconfig file")
-	} else {
-		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
+func configFromURL(url string) (*rest.Config, error) {
+	// use the current context in kubeconfig
+	config, err := clientcmd.BuildConfigFromFlags(url, getKubeconfig())
+	if err != nil {
+		return nil, errors.Wrap(err, "kubernetes.configFromURL: clientcmd.BuildConfigFromFlags failed")
 	}
-
-	flag.Parse()
-
-	return *kubeconfig
+	return config, nil
 }
 
-func getDefaultKubeconfigFilePath(homeDirPath string) string {
-	if homeDirPath != "" {
-		return filepath.Join(homeDirPath, ".kube", "config")
+func getKubeconfig() string {
+	if os.Getenv("KUBECONFIG") != "" {
+		return os.Getenv("KUBECONFIG")
 	}
-	return ""
+	return filepath.Join(os.Getenv("HOME"), ".kube", "config")
 }
 
 // Svcs returns info about all running services
