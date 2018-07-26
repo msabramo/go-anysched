@@ -1,6 +1,7 @@
 package kubernetes
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -19,6 +20,17 @@ import (
 func NewTestServerJSONResponse(jsonResponseFilePath string) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		writeJSONResponseFromFile(w, jsonResponseFilePath)
+	}))
+}
+
+func NewTestServerJSONResponses(jsonResponseFilePaths ...string) *httptest.Server {
+	count := 0
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		writeJSONResponseFromFile(w, jsonResponseFilePaths[count])
+		count++
+		if count >= len(jsonResponseFilePaths) {
+			count = len(jsonResponseFilePaths) - 1
+		}
 	}))
 }
 
@@ -435,6 +447,109 @@ var _ = Describe("kubernetes/manager.go", func() {
 				Expect(props["resourceVersion"]).To(Equal("222164"))
 				Expect(props["annotations.deployment.kubernetes.io/revision"]).To(Equal("1"))
 				Expect(props["selfLink"]).To(Equal("/apis/apps/v1/namespaces/default/deployments/httpbin"))
+			})
+		})
+	})
+
+	Context("a deployment that progresses", func() {
+		var (
+			ts           *httptest.Server
+			myDeployment deployment
+		)
+
+		getDeployment := func() deployment {
+			tsTmp := NewTestServerJSONResponse("testdata/deployment_create.json")
+			defer tsTmp.Close()
+			mgr := NewManagerWithTestServer(ts)
+			svcCfg := hyperion.SvcCfg{ID: "httpbin", Image: "citizenstig/httpbin", Count: 3}
+			deploySvcResult, _ := mgr.DeploySvc(svcCfg)
+			return deploySvcResult.(deployment)
+		}
+
+		BeforeEach(func() {
+			ts = NewTestServerJSONResponses(
+				"testdata/deployment_get_httpbin.json",
+			)
+			myDeployment = getDeployment()
+		})
+
+		AfterEach(func() {
+			ts.Close()
+		})
+
+		Describe("Wait", func() {
+			It("works", func() {
+				_, err := myDeployment.Wait(context.Background())
+				Expect(err).ToNot(HaveOccurred())
+			})
+		})
+	})
+
+	Context("a deployment that has replicas unavailable", func() {
+		var (
+			ts           *httptest.Server
+			myDeployment deployment
+		)
+
+		getDeployment := func() deployment {
+			tsTmp := NewTestServerJSONResponse("testdata/deployment_create.json")
+			defer tsTmp.Close()
+			mgr := NewManagerWithTestServer(ts)
+			timeout := time.Duration(6 * time.Second)
+			svcCfg := hyperion.SvcCfg{
+				ID:    "httpbin",
+				Image: "citizenstig/httpbin",
+				Count: 3,
+				DeployTimeoutDuration: &timeout,
+			}
+			deploySvcResult, _ := mgr.DeploySvc(svcCfg)
+			return deploySvcResult.(deployment)
+		}
+
+		BeforeEach(func() {
+			ts = NewTestServerJSONResponses(
+				"testdata/deployment_old_generation.json",
+				"testdata/deployment_old_generation.json",
+				"testdata/deployment_old_generation.json",
+				"testdata/deployment_not_all_updated.json",
+				"testdata/deployment_not_all_updated.json",
+				"testdata/deployment_not_all_updated.json",
+				"testdata/deployment_unavailable_replicas.json",
+				"testdata/deployment_unavailable_replicas.json",
+				"testdata/deployment_unavailable_replicas.json",
+				"testdata/deployment_fail_not_progressing.json",
+			)
+			myDeployment = getDeployment()
+		})
+
+		AfterEach(func() {
+			ts.Close()
+		})
+
+		Describe("GetStatus", func() {
+			It("works", func() {
+				var (
+					status *hyperion.OperationStatus
+					err    error
+				)
+
+				for {
+					status, err = myDeployment.GetStatus()
+					if err != nil {
+						break
+					}
+					Expect(status).ToNot(BeNil())
+				}
+
+				Expect(err).To(MatchError(`deployment "httpbin" exceeded its progress deadline`))
+			})
+		})
+
+		Describe("Wait", func() {
+			It("works", func() {
+				_, err := myDeployment.Wait(context.Background())
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("Timed out after 6s"))
 			})
 		})
 	})
