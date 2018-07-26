@@ -119,25 +119,47 @@ var _ = Describe("kubernetes/manager.go", func() {
 			ts      *httptest.Server
 		)
 
-		BeforeEach(func() {
-			ts = NewTestServerJSONResponse("testdata/deployments_list.json")
-			manager = NewManagerWithTestServer(ts)
+		Context("healthy k8s", func() {
+			BeforeEach(func() {
+				ts = NewTestServerJSONResponse("testdata/deployments_list.json")
+				manager = NewManagerWithTestServer(ts)
+			})
+
+			AfterEach(func() {
+				ts.Close()
+			})
+
+			It("works", func() {
+				svcs, err := manager.Svcs()
+				Expect(err).ToNot(HaveOccurred())
+				Expect(svcs).ToNot(BeNil())
+				Expect(svcs).To(HaveLen(1))
+				Expect(svcs[0].ID).To(Equal("httpbin"))
+				Expect(*svcs[0].TasksRunning).To(Equal(3))
+				Expect(*svcs[0].TasksHealthy).To(Equal(3))
+				Expect(*svcs[0].TasksUnhealthy).To(Equal(0))
+				Expect((*svcs[0].CreationTime).Format(time.RFC3339)).To(Equal("2018-07-20T11:38:03-07:00"))
+			})
 		})
 
-		AfterEach(func() {
-			ts.Close()
-		})
+		Context("unhealthy k8s", func() {
+			BeforeEach(func() {
+				ts = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					w.WriteHeader(500)
+				}))
+				manager = NewManagerWithTestServer(ts)
+			})
 
-		It("works", func() {
-			svcs, err := manager.Svcs()
-			Expect(err).ToNot(HaveOccurred())
-			Expect(svcs).ToNot(BeNil())
-			Expect(svcs).To(HaveLen(1))
-			Expect(svcs[0].ID).To(Equal("httpbin"))
-			Expect(*svcs[0].TasksRunning).To(Equal(3))
-			Expect(*svcs[0].TasksHealthy).To(Equal(3))
-			Expect(*svcs[0].TasksUnhealthy).To(Equal(0))
-			Expect((*svcs[0].CreationTime).Format(time.RFC3339)).To(Equal("2018-07-20T11:38:03-07:00"))
+			AfterEach(func() {
+				ts.Close()
+			})
+
+			It("works", func() {
+				svcs, err := manager.Svcs()
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("deploymentsClient.List failed"))
+				Expect(svcs).To(BeNil())
+			})
 		})
 	})
 
@@ -147,35 +169,57 @@ var _ = Describe("kubernetes/manager.go", func() {
 			ts      *httptest.Server
 		)
 
-		BeforeEach(func() {
-			ts = NewTestServerJSONResponse("testdata/pods_list.json")
-			manager = NewManagerWithTestServer(ts)
+		Context("healthy k8s", func() {
+			BeforeEach(func() {
+				ts = NewTestServerJSONResponse("testdata/pods_list.json")
+				manager = NewManagerWithTestServer(ts)
+			})
+
+			AfterEach(func() {
+				ts.Close()
+			})
+
+			It("works", func() {
+				tasks, err := manager.Tasks()
+				Expect(err).ToNot(HaveOccurred())
+				Expect(tasks).ToNot(BeNil())
+				Expect(tasks).To(HaveLen(3))
+
+				Expect(tasks[0].Name).To(Equal("httpbin-5d7c976bcd-9kjz5"))
+				Expect(tasks[0].HostIP).To(Equal("10.0.2.15"))
+				Expect(tasks[0].TaskIP).To(Equal("172.17.0.4"))
+				Expect((*tasks[0].ReadyTime).Format(time.RFC3339)).To(Equal("2018-07-20T11:38:05-07:00"))
+
+				Expect(tasks[1].Name).To(Equal("httpbin-5d7c976bcd-wmsvl"))
+				Expect(tasks[1].HostIP).To(Equal("10.0.2.15"))
+				Expect(tasks[1].TaskIP).To(Equal("172.17.0.5"))
+				Expect((*tasks[1].ReadyTime).Format(time.RFC3339)).To(Equal("2018-07-20T11:38:07-07:00"))
+
+				Expect(tasks[2].Name).To(Equal("httpbin-5d7c976bcd-xn6dx"))
+				Expect(tasks[2].HostIP).To(Equal("10.0.2.15"))
+				Expect(tasks[2].TaskIP).To(Equal("172.17.0.6"))
+				Expect((*tasks[2].ReadyTime).Format(time.RFC3339)).To(Equal("2018-07-20T11:38:09-07:00"))
+			})
 		})
 
-		AfterEach(func() {
-			ts.Close()
-		})
+		Context("unhealthy k8s", func() {
+			BeforeEach(func() {
+				ts = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					w.WriteHeader(500)
+				}))
+				manager = NewManagerWithTestServer(ts)
+			})
 
-		It("works", func() {
-			tasks, err := manager.Tasks()
-			Expect(err).ToNot(HaveOccurred())
-			Expect(tasks).ToNot(BeNil())
-			Expect(tasks).To(HaveLen(3))
+			AfterEach(func() {
+				ts.Close()
+			})
 
-			Expect(tasks[0].Name).To(Equal("httpbin-5d7c976bcd-9kjz5"))
-			Expect(tasks[0].HostIP).To(Equal("10.0.2.15"))
-			Expect(tasks[0].TaskIP).To(Equal("172.17.0.4"))
-			Expect((*tasks[0].ReadyTime).Format(time.RFC3339)).To(Equal("2018-07-20T11:38:05-07:00"))
-
-			Expect(tasks[1].Name).To(Equal("httpbin-5d7c976bcd-wmsvl"))
-			Expect(tasks[1].HostIP).To(Equal("10.0.2.15"))
-			Expect(tasks[1].TaskIP).To(Equal("172.17.0.5"))
-			Expect((*tasks[1].ReadyTime).Format(time.RFC3339)).To(Equal("2018-07-20T11:38:07-07:00"))
-
-			Expect(tasks[2].Name).To(Equal("httpbin-5d7c976bcd-xn6dx"))
-			Expect(tasks[2].HostIP).To(Equal("10.0.2.15"))
-			Expect(tasks[2].TaskIP).To(Equal("172.17.0.6"))
-			Expect((*tasks[2].ReadyTime).Format(time.RFC3339)).To(Equal("2018-07-20T11:38:09-07:00"))
+			It("works", func() {
+				tasks, err := manager.Tasks()
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("podsClient.List failed"))
+				Expect(tasks).To(BeNil())
+			})
 		})
 	})
 
@@ -185,35 +229,57 @@ var _ = Describe("kubernetes/manager.go", func() {
 			ts      *httptest.Server
 		)
 
-		BeforeEach(func() {
-			ts = NewTestServerJSONResponse("testdata/pods_list.json")
-			manager = NewManagerWithTestServer(ts)
+		Context("healthy k8s", func() {
+			BeforeEach(func() {
+				ts = NewTestServerJSONResponse("testdata/pods_list.json")
+				manager = NewManagerWithTestServer(ts)
+			})
+
+			AfterEach(func() {
+				ts.Close()
+			})
+
+			It("works", func() {
+				tasks, err := manager.SvcTasks(hyperion.SvcCfg{ID: "httpbin"})
+				Expect(err).ToNot(HaveOccurred())
+				Expect(tasks).ToNot(BeNil())
+				Expect(tasks).To(HaveLen(3))
+
+				Expect(tasks[0].Name).To(Equal("httpbin-5d7c976bcd-9kjz5"))
+				Expect(tasks[0].HostIP).To(Equal("10.0.2.15"))
+				Expect(tasks[0].TaskIP).To(Equal("172.17.0.4"))
+				Expect((*tasks[0].ReadyTime).Format(time.RFC3339)).To(Equal("2018-07-20T11:38:05-07:00"))
+
+				Expect(tasks[1].Name).To(Equal("httpbin-5d7c976bcd-wmsvl"))
+				Expect(tasks[1].HostIP).To(Equal("10.0.2.15"))
+				Expect(tasks[1].TaskIP).To(Equal("172.17.0.5"))
+				Expect((*tasks[1].ReadyTime).Format(time.RFC3339)).To(Equal("2018-07-20T11:38:07-07:00"))
+
+				Expect(tasks[2].Name).To(Equal("httpbin-5d7c976bcd-xn6dx"))
+				Expect(tasks[2].HostIP).To(Equal("10.0.2.15"))
+				Expect(tasks[2].TaskIP).To(Equal("172.17.0.6"))
+				Expect((*tasks[2].ReadyTime).Format(time.RFC3339)).To(Equal("2018-07-20T11:38:09-07:00"))
+			})
 		})
 
-		AfterEach(func() {
-			ts.Close()
-		})
+		Context("unhealthy k8s", func() {
+			BeforeEach(func() {
+				ts = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					w.WriteHeader(500)
+				}))
+				manager = NewManagerWithTestServer(ts)
+			})
 
-		It("works", func() {
-			tasks, err := manager.SvcTasks(hyperion.SvcCfg{ID: "httpbin"})
-			Expect(err).ToNot(HaveOccurred())
-			Expect(tasks).ToNot(BeNil())
-			Expect(tasks).To(HaveLen(3))
+			AfterEach(func() {
+				ts.Close()
+			})
 
-			Expect(tasks[0].Name).To(Equal("httpbin-5d7c976bcd-9kjz5"))
-			Expect(tasks[0].HostIP).To(Equal("10.0.2.15"))
-			Expect(tasks[0].TaskIP).To(Equal("172.17.0.4"))
-			Expect((*tasks[0].ReadyTime).Format(time.RFC3339)).To(Equal("2018-07-20T11:38:05-07:00"))
-
-			Expect(tasks[1].Name).To(Equal("httpbin-5d7c976bcd-wmsvl"))
-			Expect(tasks[1].HostIP).To(Equal("10.0.2.15"))
-			Expect(tasks[1].TaskIP).To(Equal("172.17.0.5"))
-			Expect((*tasks[1].ReadyTime).Format(time.RFC3339)).To(Equal("2018-07-20T11:38:07-07:00"))
-
-			Expect(tasks[2].Name).To(Equal("httpbin-5d7c976bcd-xn6dx"))
-			Expect(tasks[2].HostIP).To(Equal("10.0.2.15"))
-			Expect(tasks[2].TaskIP).To(Equal("172.17.0.6"))
-			Expect((*tasks[2].ReadyTime).Format(time.RFC3339)).To(Equal("2018-07-20T11:38:09-07:00"))
+			It("works", func() {
+				tasks, err := manager.SvcTasks(hyperion.SvcCfg{ID: "httpbin"})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("podsClient.List failed"))
+				Expect(tasks).To(BeNil())
+			})
 		})
 	})
 
@@ -221,22 +287,46 @@ var _ = Describe("kubernetes/manager.go", func() {
 		var (
 			manager hyperion.Manager
 			ts      *httptest.Server
+			svcCfg  hyperion.SvcCfg
 		)
 
-		BeforeEach(func() {
-			ts = NewTestServerJSONResponse("testdata/deployment_create.json")
-			manager = NewManagerWithTestServer(ts)
+		Context("successful deploy", func() {
+			BeforeEach(func() {
+				ts = NewTestServerJSONResponse("testdata/deployment_create.json")
+				manager = NewManagerWithTestServer(ts)
+				svcCfg = hyperion.SvcCfg{ID: "httpbin", Image: "citizenstig/httpbin", Count: 3}
+			})
+
+			AfterEach(func() {
+				ts.Close()
+			})
+
+			It("works", func() {
+				deployment, err := manager.DeploySvc(svcCfg)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(deployment).ToNot(BeNil())
+			})
 		})
 
-		AfterEach(func() {
-			ts.Close()
-		})
+		Context("k8s deployment creation fails with HTTP 500", func() {
+			BeforeEach(func() {
+				ts = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					w.WriteHeader(500)
+				}))
+				manager = NewManagerWithTestServer(ts)
+				svcCfg = hyperion.SvcCfg{ID: "httpbin", Image: "citizenstig/httpbin", Count: 3}
+			})
 
-		It("works", func() {
-			svcCfg := hyperion.SvcCfg{ID: "httpbin", Image: "citizenstig/httpbin", Count: 3}
-			deployment, err := manager.DeploySvc(svcCfg)
-			Expect(err).ToNot(HaveOccurred())
-			Expect(deployment).ToNot(BeNil())
+			AfterEach(func() {
+				ts.Close()
+			})
+
+			It("works", func() {
+				deployment, err := manager.DeploySvc(svcCfg)
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("deploymentsClient.Create failed"))
+				Expect(deployment).To(BeNil())
+			})
 		})
 	})
 
@@ -246,25 +336,45 @@ var _ = Describe("kubernetes/manager.go", func() {
 			ts      *httptest.Server
 		)
 
-		BeforeEach(func() {
-			ts = NewTestServerJSONResponse("testdata/deployment_destroy_httpbin.json")
-			manager = NewManagerWithTestServer(ts)
+		Context("successful destroy", func() {
+			BeforeEach(func() {
+				ts = NewTestServerJSONResponse("testdata/deployment_destroy_httpbin.json")
+				manager = NewManagerWithTestServer(ts)
+			})
+
+			AfterEach(func() {
+				ts.Close()
+			})
+
+			It("works", func() {
+				destroy, err := manager.DestroySvc("httpbin")
+				Expect(err).ToNot(HaveOccurred())
+				Expect(destroy).To(BeNil())
+			})
 		})
 
-		AfterEach(func() {
-			ts.Close()
-		})
+		Context("k8s deployment destroy fails with HTTP 500", func() {
+			BeforeEach(func() {
+				ts = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					w.WriteHeader(500)
+				}))
+				manager = NewManagerWithTestServer(ts)
+			})
 
-		It("works", func() {
-			destroy, err := manager.DestroySvc("httpbin")
-			Expect(err).ToNot(HaveOccurred())
-			Expect(destroy).To(BeNil())
+			AfterEach(func() {
+				ts.Close()
+			})
+
+			It("works", func() {
+				destroy, err := manager.DestroySvc("httpbin")
+				Expect(err.Error()).To(ContainSubstring("deploymentsClient.Delete failed"))
+				Expect(destroy).To(BeNil())
+			})
 		})
 	})
 
 	Context("a deployment exists", func() {
 		var (
-			myManager    hyperion.Manager
 			ts           *httptest.Server
 			myDeployment deployment
 		)
@@ -272,15 +382,14 @@ var _ = Describe("kubernetes/manager.go", func() {
 		getDeployment := func() deployment {
 			tsTmp := NewTestServerJSONResponse("testdata/deployment_create.json")
 			defer tsTmp.Close()
-			myManagerTmp := NewManagerWithTestServer(ts)
+			mgr := NewManagerWithTestServer(ts)
 			svcCfg := hyperion.SvcCfg{ID: "httpbin", Image: "citizenstig/httpbin", Count: 3}
-			deploySvcResult, _ := myManagerTmp.DeploySvc(svcCfg)
+			deploySvcResult, _ := mgr.DeploySvc(svcCfg)
 			return deploySvcResult.(deployment)
 		}
 
 		BeforeEach(func() {
 			ts = NewTestServerJSONResponse("testdata/deployment_get_httpbin.json")
-			myManager = NewManagerWithTestServer(ts)
 			myDeployment = getDeployment()
 		})
 
