@@ -130,4 +130,80 @@ var _ = Describe("kubernetes/manager.go", func() {
 			Expect((*svcs[0].CreationTime).Format(time.RFC3339)).To(Equal("2018-07-20T11:38:03-07:00"))
 		})
 	})
+
+	Describe("Tasks", func() {
+		var (
+			manager hyperion.Manager
+			ts      *httptest.Server
+		)
+
+		BeforeEach(func() {
+			ts = NewTestServerJSONResponse("testdata/pods_list.json")
+			manager = NewManagerWithTestServer(ts)
+		})
+
+		AfterEach(func() {
+			ts.Close()
+		})
+
+		It("works", func() {
+			tasks, err := manager.Tasks()
+			Expect(err).ToNot(HaveOccurred())
+			Expect(tasks).ToNot(BeNil())
+			Expect(tasks).To(HaveLen(3))
+
+			Expect(tasks[0].Name).To(Equal("httpbin-5d7c976bcd-9kjz5"))
+			Expect(tasks[0].HostIP).To(Equal("10.0.2.15"))
+			Expect(tasks[0].TaskIP).To(Equal("172.17.0.4"))
+			Expect((*tasks[0].ReadyTime).Format(time.RFC3339)).To(Equal("2018-07-20T11:38:05-07:00"))
+
+			Expect(tasks[1].Name).To(Equal("httpbin-5d7c976bcd-wmsvl"))
+			Expect(tasks[1].HostIP).To(Equal("10.0.2.15"))
+			Expect(tasks[1].TaskIP).To(Equal("172.17.0.5"))
+			Expect((*tasks[1].ReadyTime).Format(time.RFC3339)).To(Equal("2018-07-20T11:38:07-07:00"))
+
+			Expect(tasks[2].Name).To(Equal("httpbin-5d7c976bcd-xn6dx"))
+			Expect(tasks[2].HostIP).To(Equal("10.0.2.15"))
+			Expect(tasks[2].TaskIP).To(Equal("172.17.0.6"))
+			Expect((*tasks[2].ReadyTime).Format(time.RFC3339)).To(Equal("2018-07-20T11:38:09-07:00"))
+		})
+	})
+
+	Describe("SvcTasks", func() {
+		var (
+			manager hyperion.Manager
+			ts      *httptest.Server
+		)
+
+		BeforeEach(func() {
+			ts = NewTestServerJSONResponse("testdata/pods_list.json")
+			manager = NewManagerWithTestServer(ts)
+		})
+
+		AfterEach(func() {
+			ts.Close()
+		})
+
+		It("works", func() {
+			tasks, err := manager.SvcTasks(hyperion.SvcCfg{ID: "httpbin"})
+			Expect(err).ToNot(HaveOccurred())
+			Expect(tasks).ToNot(BeNil())
+			Expect(tasks).To(HaveLen(3))
+
+			Expect(tasks[0].Name).To(Equal("httpbin-5d7c976bcd-9kjz5"))
+			Expect(tasks[0].HostIP).To(Equal("10.0.2.15"))
+			Expect(tasks[0].TaskIP).To(Equal("172.17.0.4"))
+			Expect((*tasks[0].ReadyTime).Format(time.RFC3339)).To(Equal("2018-07-20T11:38:05-07:00"))
+
+			Expect(tasks[1].Name).To(Equal("httpbin-5d7c976bcd-wmsvl"))
+			Expect(tasks[1].HostIP).To(Equal("10.0.2.15"))
+			Expect(tasks[1].TaskIP).To(Equal("172.17.0.5"))
+			Expect((*tasks[1].ReadyTime).Format(time.RFC3339)).To(Equal("2018-07-20T11:38:07-07:00"))
+
+			Expect(tasks[2].Name).To(Equal("httpbin-5d7c976bcd-xn6dx"))
+			Expect(tasks[2].HostIP).To(Equal("10.0.2.15"))
+			Expect(tasks[2].TaskIP).To(Equal("172.17.0.6"))
+			Expect((*tasks[2].ReadyTime).Format(time.RFC3339)).To(Equal("2018-07-20T11:38:09-07:00"))
+		})
+	})
 })

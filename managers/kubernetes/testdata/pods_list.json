@@ -1,0 +1,382 @@
+{
+  "kind": "PodList",
+  "apiVersion": "v1",
+  "metadata": {
+    "selfLink": "/api/v1/namespaces/default/pods",
+    "resourceVersion": "212571"
+  },
+  "items": [
+    {
+      "metadata": {
+        "name": "httpbin-5d7c976bcd-9kjz5",
+        "generateName": "httpbin-5d7c976bcd-",
+        "namespace": "default",
+        "selfLink": "/api/v1/namespaces/default/pods/httpbin-5d7c976bcd-9kjz5",
+        "uid": "097597ed-8c4c-11e8-a0ad-080027aa669d",
+        "resourceVersion": "30116",
+        "creationTimestamp": "2018-07-20T18:38:03Z",
+        "labels": {
+          "appID": "httpbin",
+          "pod-template-hash": "1837532678"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "extensions/v1beta1",
+            "kind": "ReplicaSet",
+            "name": "httpbin-5d7c976bcd",
+            "uid": "09705277-8c4c-11e8-a0ad-080027aa669d",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ]
+      },
+      "spec": {
+        "volumes": [
+          {
+            "name": "default-token-952cn",
+            "secret": {
+              "secretName": "default-token-952cn",
+              "defaultMode": 420
+            }
+          }
+        ],
+        "containers": [
+          {
+            "name": "httpbin",
+            "image": "citizenstig/httpbin:latest",
+            "resources": {
+              
+            },
+            "volumeMounts": [
+              {
+                "name": "default-token-952cn",
+                "readOnly": true,
+                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount"
+              }
+            ],
+            "terminationMessagePath": "/dev/termination-log",
+            "terminationMessagePolicy": "File",
+            "imagePullPolicy": "Always"
+          }
+        ],
+        "restartPolicy": "Always",
+        "terminationGracePeriodSeconds": 30,
+        "dnsPolicy": "ClusterFirst",
+        "serviceAccountName": "default",
+        "serviceAccount": "default",
+        "nodeName": "minikube",
+        "securityContext": {
+          
+        },
+        "schedulerName": "default-scheduler",
+        "tolerations": [
+          {
+            "key": "node.kubernetes.io/not-ready",
+            "operator": "Exists",
+            "effect": "NoExecute",
+            "tolerationSeconds": 300
+          },
+          {
+            "key": "node.kubernetes.io/unreachable",
+            "operator": "Exists",
+            "effect": "NoExecute",
+            "tolerationSeconds": 300
+          }
+        ]
+      },
+      "status": {
+        "phase": "Running",
+        "conditions": [
+          {
+            "type": "Initialized",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2018-07-20T18:38:03Z"
+          },
+          {
+            "type": "Ready",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2018-07-20T18:38:05Z"
+          },
+          {
+            "type": "PodScheduled",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2018-07-20T18:38:03Z"
+          }
+        ],
+        "hostIP": "10.0.2.15",
+        "podIP": "172.17.0.4",
+        "startTime": "2018-07-20T18:38:03Z",
+        "containerStatuses": [
+          {
+            "name": "httpbin",
+            "state": {
+              "running": {
+                "startedAt": "2018-07-20T18:38:05Z"
+              }
+            },
+            "lastState": {
+              
+            },
+            "ready": true,
+            "restartCount": 0,
+            "image": "citizenstig/httpbin:latest",
+            "imageID": "docker-pullable://citizenstig/httpbin@sha256:b81c818ccb8668575eb3771de2f72f8a5530b515365842ad374db76ad8bcf875",
+            "containerID": "docker://e22a234574d12348ebf56fb24550c6bff5ff28da2fc6df8ed07c9881732a6f1c"
+          }
+        ],
+        "qosClass": "BestEffort"
+      }
+    },
+    {
+      "metadata": {
+        "name": "httpbin-5d7c976bcd-wmsvl",
+        "generateName": "httpbin-5d7c976bcd-",
+        "namespace": "default",
+        "selfLink": "/api/v1/namespaces/default/pods/httpbin-5d7c976bcd-wmsvl",
+        "uid": "09756dcd-8c4c-11e8-a0ad-080027aa669d",
+        "resourceVersion": "30123",
+        "creationTimestamp": "2018-07-20T18:38:03Z",
+        "labels": {
+          "appID": "httpbin",
+          "pod-template-hash": "1837532678"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "extensions/v1beta1",
+            "kind": "ReplicaSet",
+            "name": "httpbin-5d7c976bcd",
+            "uid": "09705277-8c4c-11e8-a0ad-080027aa669d",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ]
+      },
+      "spec": {
+        "volumes": [
+          {
+            "name": "default-token-952cn",
+            "secret": {
+              "secretName": "default-token-952cn",
+              "defaultMode": 420
+            }
+          }
+        ],
+        "containers": [
+          {
+            "name": "httpbin",
+            "image": "citizenstig/httpbin:latest",
+            "resources": {
+              
+            },
+            "volumeMounts": [
+              {
+                "name": "default-token-952cn",
+                "readOnly": true,
+                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount"
+              }
+            ],
+            "terminationMessagePath": "/dev/termination-log",
+            "terminationMessagePolicy": "File",
+            "imagePullPolicy": "Always"
+          }
+        ],
+        "restartPolicy": "Always",
+        "terminationGracePeriodSeconds": 30,
+        "dnsPolicy": "ClusterFirst",
+        "serviceAccountName": "default",
+        "serviceAccount": "default",
+        "nodeName": "minikube",
+        "securityContext": {
+          
+        },
+        "schedulerName": "default-scheduler",
+        "tolerations": [
+          {
+            "key": "node.kubernetes.io/not-ready",
+            "operator": "Exists",
+            "effect": "NoExecute",
+            "tolerationSeconds": 300
+          },
+          {
+            "key": "node.kubernetes.io/unreachable",
+            "operator": "Exists",
+            "effect": "NoExecute",
+            "tolerationSeconds": 300
+          }
+        ]
+      },
+      "status": {
+        "phase": "Running",
+        "conditions": [
+          {
+            "type": "Initialized",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2018-07-20T18:38:03Z"
+          },
+          {
+            "type": "Ready",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2018-07-20T18:38:07Z"
+          },
+          {
+            "type": "PodScheduled",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2018-07-20T18:38:03Z"
+          }
+        ],
+        "hostIP": "10.0.2.15",
+        "podIP": "172.17.0.5",
+        "startTime": "2018-07-20T18:38:03Z",
+        "containerStatuses": [
+          {
+            "name": "httpbin",
+            "state": {
+              "running": {
+                "startedAt": "2018-07-20T18:38:06Z"
+              }
+            },
+            "lastState": {
+              
+            },
+            "ready": true,
+            "restartCount": 0,
+            "image": "citizenstig/httpbin:latest",
+            "imageID": "docker-pullable://citizenstig/httpbin@sha256:b81c818ccb8668575eb3771de2f72f8a5530b515365842ad374db76ad8bcf875",
+            "containerID": "docker://e632b829c89f7b512c0acd5337af454b74e17a1ecde08b9b1dccbacbe44e6b5f"
+          }
+        ],
+        "qosClass": "BestEffort"
+      }
+    },
+    {
+      "metadata": {
+        "name": "httpbin-5d7c976bcd-xn6dx",
+        "generateName": "httpbin-5d7c976bcd-",
+        "namespace": "default",
+        "selfLink": "/api/v1/namespaces/default/pods/httpbin-5d7c976bcd-xn6dx",
+        "uid": "097381e8-8c4c-11e8-a0ad-080027aa669d",
+        "resourceVersion": "30131",
+        "creationTimestamp": "2018-07-20T18:38:03Z",
+        "labels": {
+          "appID": "httpbin",
+          "pod-template-hash": "1837532678"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "extensions/v1beta1",
+            "kind": "ReplicaSet",
+            "name": "httpbin-5d7c976bcd",
+            "uid": "09705277-8c4c-11e8-a0ad-080027aa669d",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ]
+      },
+      "spec": {
+        "volumes": [
+          {
+            "name": "default-token-952cn",
+            "secret": {
+              "secretName": "default-token-952cn",
+              "defaultMode": 420
+            }
+          }
+        ],
+        "containers": [
+          {
+            "name": "httpbin",
+            "image": "citizenstig/httpbin:latest",
+            "resources": {
+              
+            },
+            "volumeMounts": [
+              {
+                "name": "default-token-952cn",
+                "readOnly": true,
+                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount"
+              }
+            ],
+            "terminationMessagePath": "/dev/termination-log",
+            "terminationMessagePolicy": "File",
+            "imagePullPolicy": "Always"
+          }
+        ],
+        "restartPolicy": "Always",
+        "terminationGracePeriodSeconds": 30,
+        "dnsPolicy": "ClusterFirst",
+        "serviceAccountName": "default",
+        "serviceAccount": "default",
+        "nodeName": "minikube",
+        "securityContext": {
+          
+        },
+        "schedulerName": "default-scheduler",
+        "tolerations": [
+          {
+            "key": "node.kubernetes.io/not-ready",
+            "operator": "Exists",
+            "effect": "NoExecute",
+            "tolerationSeconds": 300
+          },
+          {
+            "key": "node.kubernetes.io/unreachable",
+            "operator": "Exists",
+            "effect": "NoExecute",
+            "tolerationSeconds": 300
+          }
+        ]
+      },
+      "status": {
+        "phase": "Running",
+        "conditions": [
+          {
+            "type": "Initialized",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2018-07-20T18:38:03Z"
+          },
+          {
+            "type": "Ready",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2018-07-20T18:38:09Z"
+          },
+          {
+            "type": "PodScheduled",
+            "status": "True",
+            "lastProbeTime": null,
+            "lastTransitionTime": "2018-07-20T18:38:03Z"
+          }
+        ],
+        "hostIP": "10.0.2.15",
+        "podIP": "172.17.0.6",
+        "startTime": "2018-07-20T18:38:03Z",
+        "containerStatuses": [
+          {
+            "name": "httpbin",
+            "state": {
+              "running": {
+                "startedAt": "2018-07-20T18:38:08Z"
+              }
+            },
+            "lastState": {
+              
+            },
+            "ready": true,
+            "restartCount": 0,
+            "image": "citizenstig/httpbin:latest",
+            "imageID": "docker-pullable://citizenstig/httpbin@sha256:b81c818ccb8668575eb3771de2f72f8a5530b515365842ad374db76ad8bcf875",
+            "containerID": "docker://12775a5d9ce1dfba0fe10c0006e9efb4a833d2da4f72a998c72861d29c0c9659"
+          }
+        ],
+        "qosClass": "BestEffort"
+      }
+    }
+  ]
+}
