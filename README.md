@@ -92,21 +92,21 @@ ok  	git.corp.adobe.com/abramowi/hyperion/utils	0.075s
 
 ```
 $ make test-cover
-scripts/coverage
-ok      .                                          0.128s coverage: 100.0% of statements
-ok      ./managers/dockerswarm                     0.064s coverage:  20.0% of statements
-ok      ./managers/kubernetes                      0.106s coverage:  10.8% of statements
-ok      ./managers/marathon                        0.042s coverage:   8.1% of statements
-ok      ./managers/nomad                           0.050s coverage:  27.3% of statements
-ok      ./utils                                    0.042s coverage: 100.0% of statements
+HYPERIONCLI_ENV=minikube scripts/coverage
+ok      .                                          1.459s coverage: 100.0% of statements
+ok      ./managers/dockerswarm                     1.539s coverage:  20.0% of statements
+ok      ./managers/kubernetes                      0.175s coverage:  59.9% of statements
+ok      ./managers/marathon                        1.542s coverage:   8.1% of statements
+ok      ./managers/nomad                           1.218s coverage:  27.3% of statements
+ok      ./utils                                    1.599s coverage: 100.0% of statements
 
-real	0m17.414s
-user	0m10.922s
-sys	0m6.477s
-Total code coverage: 18.7%
+real	0m4.103s
+user	0m7.135s
+sys	0m2.930s
+Total code coverage: 43.5%
 
 Generating coverage/total-cobertura.xml (Cobertura XML file)
--rw-r--r--  1 abramowi  staff  71512 Jul 19 09:14 coverage/total-cobertura.xml
+-rw-r--r--  1 abramowi  staff  72223 Jul 25 20:44 coverage/total-cobertura.xml
 ```
 
 ## Integration tests

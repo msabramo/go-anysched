@@ -8,9 +8,13 @@ import (
 	"os"
 	"time"
 
-	"git.corp.adobe.com/abramowi/hyperion"
+	appsv1 "k8s.io/api/apps/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+
+	"git.corp.adobe.com/abramowi/hyperion"
 )
 
 func NewTestServerJSONResponse(jsonResponseFilePath string) *httptest.Server {
@@ -234,6 +238,37 @@ var _ = Describe("kubernetes/manager.go", func() {
 			deployment, err := manager.DeploySvc(svcCfg)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(deployment).ToNot(BeNil())
+		})
+	})
+
+	Describe("GetStatus", func() {
+		var (
+			myManager hyperion.Manager
+			ts        *httptest.Server
+		)
+
+		BeforeEach(func() {
+			ts = NewTestServerJSONResponse("testdata/deployment_get_httpbin.json")
+			myManager = NewManagerWithTestServer(ts)
+		})
+
+		AfterEach(func() {
+			ts.Close()
+		})
+
+		It("works", func() {
+			myDeployment := deployment{
+				manager:    myManager.(*manager),
+				Deployment: &appsv1.Deployment{ObjectMeta: metav1.ObjectMeta{Name: "httpbin"}},
+			}
+			status, err := myDeployment.GetStatus()
+			Expect(err).ToNot(HaveOccurred())
+			Expect(status).ToNot(BeNil())
+			Expect(status.Done).To(BeTrue())
+			Expect(status.LastUpdateTime.Format(time.RFC3339)).To(Equal("2018-07-25T20:19:07-07:00"))
+			Expect(status.LastTransitionTime.Format(time.RFC3339)).To(Equal("2018-07-25T20:19:07-07:00"))
+			Expect(status.Msg).To(Equal(`Deployment "httpbin" successfully rolled out. ` +
+				`3 of 3 updated replicas are available.`))
 		})
 	})
 })
