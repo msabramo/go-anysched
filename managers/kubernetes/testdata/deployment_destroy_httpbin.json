@@ -1,0 +1,12 @@
+{
+  "kind": "Status",
+  "apiVersion": "v1",
+  "metadata": {},
+  "status": "Success",
+  "details": {
+    "name": "httpbin",
+    "group": "apps",
+    "kind": "deployments",
+    "uid": "a4487ed1-9082-11e8-a0ad-080027aa669d"
+  }
+}

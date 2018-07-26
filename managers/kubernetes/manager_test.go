@@ -241,6 +241,28 @@ var _ = Describe("kubernetes/manager.go", func() {
 		})
 	})
 
+	Describe("DestroySvc", func() {
+		var (
+			manager hyperion.Manager
+			ts      *httptest.Server
+		)
+
+		BeforeEach(func() {
+			ts = NewTestServerJSONResponse("testdata/deployment_destroy_httpbin.json")
+			manager = NewManagerWithTestServer(ts)
+		})
+
+		AfterEach(func() {
+			ts.Close()
+		})
+
+		It("works", func() {
+			destroy, err := manager.DestroySvc("httpbin")
+			Expect(err).ToNot(HaveOccurred())
+			Expect(destroy).To(BeNil())
+		})
+	})
+
 	Describe("GetStatus", func() {
 		var (
 			myManager hyperion.Manager
