@@ -8,8 +8,7 @@ import (
 	"os"
 	"time"
 
-	appsv1 "k8s.io/api/apps/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -263,34 +262,71 @@ var _ = Describe("kubernetes/manager.go", func() {
 		})
 	})
 
-	Describe("GetStatus", func() {
+	Context("a deployment exists", func() {
 		var (
-			myManager hyperion.Manager
-			ts        *httptest.Server
+			myManager    hyperion.Manager
+			ts           *httptest.Server
+			myDeployment deployment
 		)
+
+		getDeployment := func() deployment {
+			tsTmp := NewTestServerJSONResponse("testdata/deployment_create.json")
+			defer tsTmp.Close()
+			myManagerTmp := NewManagerWithTestServer(ts)
+			svcCfg := hyperion.SvcCfg{ID: "httpbin", Image: "citizenstig/httpbin", Count: 3}
+			deploySvcResult, _ := myManagerTmp.DeploySvc(svcCfg)
+			return deploySvcResult.(deployment)
+		}
 
 		BeforeEach(func() {
 			ts = NewTestServerJSONResponse("testdata/deployment_get_httpbin.json")
 			myManager = NewManagerWithTestServer(ts)
+			myDeployment = getDeployment()
 		})
 
 		AfterEach(func() {
 			ts.Close()
 		})
 
-		It("works", func() {
-			myDeployment := deployment{
-				manager:    myManager.(*manager),
-				Deployment: &appsv1.Deployment{ObjectMeta: metav1.ObjectMeta{Name: "httpbin"}},
-			}
-			status, err := myDeployment.GetStatus()
-			Expect(err).ToNot(HaveOccurred())
-			Expect(status).ToNot(BeNil())
-			Expect(status.Done).To(BeTrue())
-			Expect(status.LastUpdateTime.Format(time.RFC3339)).To(Equal("2018-07-25T20:19:07-07:00"))
-			Expect(status.LastTransitionTime.Format(time.RFC3339)).To(Equal("2018-07-25T20:19:07-07:00"))
-			Expect(status.Msg).To(Equal(`Deployment "httpbin" successfully rolled out. ` +
-				`3 of 3 updated replicas are available.`))
+		Describe("isDone", func() {
+			It("works", func() {
+				Expect(myDeployment.isDone()).To(BeTrue())
+			})
+		})
+
+		Describe("String", func() {
+			It("works", func() {
+				Expect(myDeployment.String()).To(Equal(`<kubernetes.deployment name="httpbin" ` +
+					`uid="a4487ed1-9082-11e8-a0ad-080027aa669d" creationTimestamp="2018-07-25T20:19:01-07:00" />`))
+			})
+		})
+
+		Describe("GetStatus", func() {
+			It("works", func() {
+				status, err := myDeployment.GetStatus()
+				Expect(err).ToNot(HaveOccurred())
+				Expect(status).ToNot(BeNil())
+				Expect(status.Done).To(BeTrue())
+				Expect(status.LastUpdateTime.Format(time.RFC3339)).To(Equal("2018-07-25T20:19:07-07:00"))
+				Expect(status.LastTransitionTime.Format(time.RFC3339)).To(Equal("2018-07-25T20:19:07-07:00"))
+				Expect(status.Msg).To(Equal(`Deployment "httpbin" successfully rolled out. ` +
+					`3 of 3 updated replicas are available.`))
+			})
+		})
+
+		Describe("GetProperties", func() {
+			It("works", func() {
+				props := myDeployment.GetProperties()
+				Expect(props).ToNot(BeNil())
+				Expect(props["name"]).To(Equal("httpbin"))
+				Expect(props["uid"]).To(Equal(types.UID("a4487ed1-9082-11e8-a0ad-080027aa669d")))
+				Expect(props["creationTimestamp"]).To(Equal("2018-07-25T20:19:01-07:00"))
+				Expect(props["namespace"]).To(Equal("default"))
+				Expect(props["generation"]).To(Equal(int64(1)))
+				Expect(props["resourceVersion"]).To(Equal("222164"))
+				Expect(props["annotations.deployment.kubernetes.io/revision"]).To(Equal("1"))
+				Expect(props["selfLink"]).To(Equal("/apis/apps/v1/namespaces/default/deployments/httpbin"))
+			})
 		})
 	})
 })
