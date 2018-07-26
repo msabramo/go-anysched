@@ -15,15 +15,22 @@ import (
 
 func NewTestServerJSONResponse(jsonResponseFilePath string) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		body, err := ioutil.ReadFile(jsonResponseFilePath)
-		if err != nil {
-			panic(err)
-		}
-		w.Header().Set("Content-Type", "application/json")
-		w.Header().Set("Content-Length", fmt.Sprintf("%d", len(body)))
-		w.WriteHeader(200)
-		w.Write(body)
+		writeJSONResponseFromFile(w, jsonResponseFilePath)
 	}))
+}
+
+func writeJSONResponseFromFile(w http.ResponseWriter, jsonResponseFilePath string) {
+	bytes, err := ioutil.ReadFile(jsonResponseFilePath)
+	if err != nil {
+		panic(err)
+	}
+	writeJSONResponseBytes(w, bytes)
+}
+
+func writeJSONResponseBytes(w http.ResponseWriter, bytes []byte) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Length", fmt.Sprintf("%d", len(bytes)))
+	w.Write(bytes)
 }
 
 func NewManagerWithTestServer(ts *httptest.Server) hyperion.Manager {
@@ -204,6 +211,29 @@ var _ = Describe("kubernetes/manager.go", func() {
 			Expect(tasks[2].HostIP).To(Equal("10.0.2.15"))
 			Expect(tasks[2].TaskIP).To(Equal("172.17.0.6"))
 			Expect((*tasks[2].ReadyTime).Format(time.RFC3339)).To(Equal("2018-07-20T11:38:09-07:00"))
+		})
+	})
+
+	Describe("DeploySvc", func() {
+		var (
+			manager hyperion.Manager
+			ts      *httptest.Server
+		)
+
+		BeforeEach(func() {
+			ts = NewTestServerJSONResponse("testdata/deployment_create.json")
+			manager = NewManagerWithTestServer(ts)
+		})
+
+		AfterEach(func() {
+			ts.Close()
+		})
+
+		It("works", func() {
+			svcCfg := hyperion.SvcCfg{ID: "httpbin", Image: "citizenstig/httpbin", Count: 3}
+			deployment, err := manager.DeploySvc(svcCfg)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(deployment).ToNot(BeNil())
 		})
 	})
 })

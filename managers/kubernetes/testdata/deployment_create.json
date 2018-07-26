@@ -1,0 +1,56 @@
+{
+  "kind": "Deployment",
+  "apiVersion": "apps/v1",
+  "metadata": {
+    "name": "httpbin",
+    "namespace": "default",
+    "selfLink": "/apis/apps/v1/namespaces/default/deployments/httpbin",
+    "uid": "67b9a203-9081-11e8-a0ad-080027aa669d",
+    "resourceVersion": "221370",
+    "generation": 1,
+    "creationTimestamp": "2018-07-26T03:10:10Z"
+  },
+  "spec": {
+    "replicas": 3,
+    "selector": {
+      "matchLabels": {
+        "appID": "httpbin"
+      }
+    },
+    "template": {
+      "metadata": {
+        "creationTimestamp": null,
+        "labels": {
+          "appID": "httpbin"
+        }
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "httpbin",
+            "image": "citizenstig/httpbin:latest",
+            "resources": {},
+            "terminationMessagePath": "/dev/termination-log",
+            "terminationMessagePolicy": "File",
+            "imagePullPolicy": "Always"
+          }
+        ],
+        "restartPolicy": "Always",
+        "terminationGracePeriodSeconds": 30,
+        "dnsPolicy": "ClusterFirst",
+        "securityContext": {},
+        "schedulerName": "default-scheduler"
+      }
+    },
+    "strategy": {
+      "type": "RollingUpdate",
+      "rollingUpdate": {
+        "maxUnavailable": "25%",
+        "maxSurge": "25%"
+      }
+    },
+    "revisionHistoryLimit": 10,
+    "progressDeadlineSeconds": 600
+  },
+  "status": {}
+}
