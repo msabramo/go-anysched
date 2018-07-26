@@ -91,7 +91,7 @@ func getKubeconfig() string {
 func (mgr *manager) Svcs() ([]hyperion.Svc, error) {
 	k8sDeploymentList, err := mgr.deploymentsClient.List(metav1.ListOptions{})
 	if err != nil {
-		return nil, errors.Wrap(err, "kubernetes.manager.AllApps: deploymentsClient.List failed")
+		return nil, errors.Wrap(err, "kubernetes.manager.Svcs: deploymentsClient.List failed")
 	}
 	svcs := make([]hyperion.Svc, len(k8sDeploymentList.Items))
 	for i := range k8sDeploymentList.Items {
@@ -115,7 +115,7 @@ func (mgr *manager) Svcs() ([]hyperion.Svc, error) {
 func (mgr *manager) Tasks() ([]hyperion.Task, error) {
 	k8sPodList, err := mgr.podsClient.List(metav1.ListOptions{})
 	if err != nil {
-		return nil, errors.Wrap(err, "kubernetes.manager.AllPods: podsClient.List failed")
+		return nil, errors.Wrap(err, "kubernetes.manager.Tasks: podsClient.List failed")
 	}
 	tasks := make([]hyperion.Task, len(k8sPodList.Items))
 	for i, k8sPod := range k8sPodList.Items {
@@ -128,7 +128,7 @@ func (mgr *manager) Tasks() ([]hyperion.Task, error) {
 func (mgr *manager) SvcTasks(svcCfg hyperion.SvcCfg) ([]hyperion.Task, error) {
 	k8sPodList, err := mgr.podsClient.List(metav1.ListOptions{LabelSelector: "appID=" + svcCfg.ID})
 	if err != nil {
-		return nil, errors.Wrapf(err, "kubernetes.manager.AppTasks: podsClient.List failed for svcCfg.ID = %q", svcCfg.ID)
+		return nil, errors.Wrapf(err, "kubernetes.manager.SvcTasks: podsClient.List failed for svcCfg.ID = %q", svcCfg.ID)
 	}
 	tasks := make([]hyperion.Task, len(k8sPodList.Items))
 	for i, k8sPod := range k8sPodList.Items {
@@ -163,11 +163,11 @@ func sortTasksByReadyTime(tasks []hyperion.Task) {
 func (mgr *manager) DeploySvc(svcCfg hyperion.SvcCfg) (hyperion.Operation, error) {
 	k8sDeploymentRequest, err := getK8sDeploymentRequest(svcCfg)
 	if err != nil {
-		return nil, errors.Wrap(err, "kubernetes.manager.DeployApp: getK8sDeploymentRequest failed")
+		return nil, errors.Wrap(err, "kubernetes.manager.DeploySvc: getK8sDeploymentRequest failed")
 	}
 	k8sDeployment, err := mgr.deploymentsClient.Create(k8sDeploymentRequest)
 	if err != nil {
-		return nil, errors.Wrap(err, "kubernetes.manager.DeployApp: deploymentsClient.Create failed")
+		return nil, errors.Wrap(err, "kubernetes.manager.DeploySvc: deploymentsClient.Create failed")
 	}
 
 	return deployment{manager: mgr, Deployment: k8sDeployment, svcCfg: svcCfg}, nil
@@ -177,7 +177,7 @@ func (mgr *manager) DeploySvc(svcCfg hyperion.SvcCfg) (hyperion.Operation, error
 func (mgr *manager) DestroySvc(svcID string) (hyperion.Operation, error) {
 	err := mgr.deploymentsClient.Delete(svcID, &metav1.DeleteOptions{})
 	if err != nil {
-		return nil, errors.Wrap(err, "kubernetes.manager.DestroyApp: deploymentsClient.Delete failed")
+		return nil, errors.Wrap(err, "kubernetes.manager.DestroySvc: deploymentsClient.Delete failed")
 	}
 	return nil, nil
 }
@@ -186,11 +186,11 @@ func getK8sDeploymentRequest(svcCfg hyperion.SvcCfg) (*appsv1.Deployment, error)
 	var k8sDeploymentRequest appsv1.Deployment
 	data, err := utils.RenderTemplateToBytes("kubernetes-deployment", deploymentYAMLTemplateString, svcCfg)
 	if err != nil {
-		return nil, errors.Wrap(err, "kubernetes.getK8sDeployment: RenderTemplateToBytes failed")
+		return nil, errors.Wrap(err, "kubernetes.getK8sDeploymentRequest: RenderTemplateToBytes failed")
 	}
 	err = decodeYAMLOrJSON(data, &k8sDeploymentRequest)
 	if err != nil {
-		return nil, errors.Wrap(err, "kubernetes.getK8sDeployment: decodeYAMLOrJSON failed")
+		return nil, errors.Wrap(err, "kubernetes.getK8sDeploymentRequest: decodeYAMLOrJSON failed")
 	}
 	return &k8sDeploymentRequest, nil
 }
