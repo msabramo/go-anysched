@@ -17,14 +17,15 @@ time go test -cover -coverprofile coverage/total.coverprofile $(go list -f '{{.I
 # Output total coverage
 go tool cover -func=coverage/total.coverprofile | awk '/^total:/ { print "Total code coverage:", $3 }'
 
+# Skip generating Cobertura XML and running diff-cover for now until the project has CI
+exit 0
+
 # Convert Golang coverprofile to Cobertura XML (which can be consumed by Jenkins plugins)
 go get github.com/msabramo/gocover-cobertura
 echo; echo "Generating coverage/total-cobertura.xml (Cobertura XML file)"
 gocover-cobertura < coverage/total.coverprofile \
     | sed -e 's#git.corp.adobe.com/abramowi/hyperion/##g' > $COBERTURA_XML_FILE
 ls -l $COBERTURA_XML_FILE
-
-exit 0
 
 echo; echo "Running diff-cover..."
 
