@@ -14,7 +14,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"git.corp.adobe.com/abramowi/hyperion"
+	"github.com/msabramo/go-anysched"
 )
 
 func NewTestServerJSONResponse(jsonResponseFilePath string) *httptest.Server {
@@ -48,7 +48,7 @@ func writeJSONResponseBytes(w http.ResponseWriter, bytes []byte) {
 	w.Write(bytes)
 }
 
-func NewManagerWithTestServer(ts *httptest.Server) hyperion.Manager {
+func NewManagerWithTestServer(ts *httptest.Server) anysched.Manager {
 	manager, err := NewManager(ts.URL)
 	if err != nil {
 		panic(err)
@@ -127,7 +127,7 @@ var _ = Describe("kubernetes/manager.go", func() {
 
 	Describe("Svcs", func() {
 		var (
-			manager hyperion.Manager
+			manager anysched.Manager
 			ts      *httptest.Server
 		)
 
@@ -177,7 +177,7 @@ var _ = Describe("kubernetes/manager.go", func() {
 
 	Describe("Tasks", func() {
 		var (
-			manager hyperion.Manager
+			manager anysched.Manager
 			ts      *httptest.Server
 		)
 
@@ -237,7 +237,7 @@ var _ = Describe("kubernetes/manager.go", func() {
 
 	Describe("SvcTasks", func() {
 		var (
-			manager hyperion.Manager
+			manager anysched.Manager
 			ts      *httptest.Server
 		)
 
@@ -252,7 +252,7 @@ var _ = Describe("kubernetes/manager.go", func() {
 			})
 
 			It("works", func() {
-				tasks, err := manager.SvcTasks(hyperion.SvcCfg{ID: "httpbin"})
+				tasks, err := manager.SvcTasks(anysched.SvcCfg{ID: "httpbin"})
 				Expect(err).ToNot(HaveOccurred())
 				Expect(tasks).ToNot(BeNil())
 				Expect(tasks).To(HaveLen(3))
@@ -287,7 +287,7 @@ var _ = Describe("kubernetes/manager.go", func() {
 			})
 
 			It("works", func() {
-				tasks, err := manager.SvcTasks(hyperion.SvcCfg{ID: "httpbin"})
+				tasks, err := manager.SvcTasks(anysched.SvcCfg{ID: "httpbin"})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(ContainSubstring("podsClient.List failed"))
 				Expect(tasks).To(BeNil())
@@ -297,16 +297,16 @@ var _ = Describe("kubernetes/manager.go", func() {
 
 	Describe("DeploySvc", func() {
 		var (
-			manager hyperion.Manager
+			manager anysched.Manager
 			ts      *httptest.Server
-			svcCfg  hyperion.SvcCfg
+			svcCfg  anysched.SvcCfg
 		)
 
 		Context("successful deploy", func() {
 			BeforeEach(func() {
 				ts = NewTestServerJSONResponse("testdata/deployment_create.json")
 				manager = NewManagerWithTestServer(ts)
-				svcCfg = hyperion.SvcCfg{ID: "httpbin", Image: "citizenstig/httpbin", Count: 3}
+				svcCfg = anysched.SvcCfg{ID: "httpbin", Image: "citizenstig/httpbin", Count: 3}
 			})
 
 			AfterEach(func() {
@@ -326,7 +326,7 @@ var _ = Describe("kubernetes/manager.go", func() {
 					w.WriteHeader(500)
 				}))
 				manager = NewManagerWithTestServer(ts)
-				svcCfg = hyperion.SvcCfg{ID: "httpbin", Image: "citizenstig/httpbin", Count: 3}
+				svcCfg = anysched.SvcCfg{ID: "httpbin", Image: "citizenstig/httpbin", Count: 3}
 			})
 
 			AfterEach(func() {
@@ -344,7 +344,7 @@ var _ = Describe("kubernetes/manager.go", func() {
 
 	Describe("DestroySvc", func() {
 		var (
-			manager hyperion.Manager
+			manager anysched.Manager
 			ts      *httptest.Server
 		)
 
@@ -395,7 +395,7 @@ var _ = Describe("kubernetes/manager.go", func() {
 			tsTmp := NewTestServerJSONResponse("testdata/deployment_create.json")
 			defer tsTmp.Close()
 			mgr := NewManagerWithTestServer(ts)
-			svcCfg := hyperion.SvcCfg{ID: "httpbin", Image: "citizenstig/httpbin", Count: 3}
+			svcCfg := anysched.SvcCfg{ID: "httpbin", Image: "citizenstig/httpbin", Count: 3}
 			deploySvcResult, _ := mgr.DeploySvc(svcCfg)
 			return deploySvcResult.(deployment)
 		}
@@ -461,7 +461,7 @@ var _ = Describe("kubernetes/manager.go", func() {
 			tsTmp := NewTestServerJSONResponse("testdata/deployment_create.json")
 			defer tsTmp.Close()
 			mgr := NewManagerWithTestServer(ts)
-			svcCfg := hyperion.SvcCfg{ID: "httpbin", Image: "citizenstig/httpbin", Count: 3}
+			svcCfg := anysched.SvcCfg{ID: "httpbin", Image: "citizenstig/httpbin", Count: 3}
 			deploySvcResult, _ := mgr.DeploySvc(svcCfg)
 			return deploySvcResult.(deployment)
 		}
@@ -496,7 +496,7 @@ var _ = Describe("kubernetes/manager.go", func() {
 			defer tsTmp.Close()
 			mgr := NewManagerWithTestServer(ts)
 			timeout := time.Duration(6 * time.Second)
-			svcCfg := hyperion.SvcCfg{
+			svcCfg := anysched.SvcCfg{
 				ID:    "httpbin",
 				Image: "citizenstig/httpbin",
 				Count: 3,
@@ -529,7 +529,7 @@ var _ = Describe("kubernetes/manager.go", func() {
 		Describe("GetStatus", func() {
 			It("works", func() {
 				var (
-					status *hyperion.OperationStatus
+					status *anysched.OperationStatus
 					err    error
 				)
 

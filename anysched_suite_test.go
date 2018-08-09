@@ -1,4 +1,4 @@
-package hyperion_test
+package anysched_test
 
 import (
 	. "github.com/onsi/ginkgo"
@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestHyperion(t *testing.T) {
+func TestAnySched.(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Hyperion Suite")
+	RunSpecs(t, "AnySched. Suite")
 }

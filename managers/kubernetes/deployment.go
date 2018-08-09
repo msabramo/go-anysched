@@ -11,7 +11,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"git.corp.adobe.com/abramowi/hyperion"
+	"github.com/msabramo/go-anysched"
 )
 
 const (
@@ -19,7 +19,7 @@ const (
 )
 
 var (
-	getDeployTimeoutDuration = func(svcCfg hyperion.SvcCfg) time.Duration {
+	getDeployTimeoutDuration = func(svcCfg anysched.SvcCfg) time.Duration {
 		if svcCfg.DeployTimeoutDuration == nil {
 			return 60 * time.Second
 		}
@@ -27,11 +27,11 @@ var (
 	}
 )
 
-// deployment implements the hyperion.Operation interface
+// deployment implements the anysched.Operation interface
 type deployment struct {
 	*appsv1.Deployment
 	manager *manager
-	svcCfg  hyperion.SvcCfg
+	svcCfg  anysched.SvcCfg
 }
 
 func (dep deployment) String() string {
@@ -64,7 +64,7 @@ func (dep deployment) GetProperties() (propertiesMap map[string]interface{}) {
 	return propertiesMap
 }
 
-func (dep deployment) GetStatus() (status *hyperion.OperationStatus, err error) {
+func (dep deployment) GetStatus() (status *anysched.OperationStatus, err error) {
 	k8sDeployment, err := dep.manager.deploymentsClient.Get(dep.GetName(), metav1.GetOptions{})
 	if err != nil {
 		return nil, errors.Wrap(err, "kubernetes.deployment.GetStatus: deploymentsClient.Get failed")
@@ -72,7 +72,7 @@ func (dep deployment) GetStatus() (status *hyperion.OperationStatus, err error) 
 	return getStatusOfK8sDeployment(k8sDeployment)
 }
 
-func getStatusOfK8sDeployment(k8sDeployment *appsv1.Deployment) (*hyperion.OperationStatus, error) {
+func getStatusOfK8sDeployment(k8sDeployment *appsv1.Deployment) (*anysched.OperationStatus, error) {
 	if k8sDeployment.Generation <= k8sDeployment.Status.ObservedGeneration {
 		if deploymentExceededProgressDeadline(k8sDeployment) {
 			return nil, deploymentExceededProgressDeadlineError(k8sDeployment)
@@ -163,47 +163,47 @@ func waitingForDeploymentMsg(k8sDeployment *appsv1.Deployment) string {
 	return fmt.Sprintf("Waiting for deployment %q to finish", k8sDeployment.GetName())
 }
 
-func deploymentSpecUpdateNotObservedStatus(k8sDeployment *appsv1.Deployment) *hyperion.OperationStatus {
+func deploymentSpecUpdateNotObservedStatus(k8sDeployment *appsv1.Deployment) *anysched.OperationStatus {
 	msg := "Waiting for deployment spec update to be observed..."
 	return notDoneStatus(k8sDeployment, msg)
 }
 
-func notAllReplicasUpdatedStatus(k8sDeployment *appsv1.Deployment) *hyperion.OperationStatus {
+func notAllReplicasUpdatedStatus(k8sDeployment *appsv1.Deployment) *anysched.OperationStatus {
 	msg := fmt.Sprintf("%d out of %d new replicas have been updated...",
 		k8sDeployment.Status.UpdatedReplicas, *k8sDeployment.Spec.Replicas)
 	return notDoneStatus(k8sDeployment, msg)
 }
 
-func notAllReplicasAvailableStatus(k8sDeployment *appsv1.Deployment) *hyperion.OperationStatus {
+func notAllReplicasAvailableStatus(k8sDeployment *appsv1.Deployment) *anysched.OperationStatus {
 	msg := fmt.Sprintf("%d of %d updated replicas are available...",
 		k8sDeployment.Status.AvailableReplicas, k8sDeployment.Status.UpdatedReplicas)
 	return notDoneStatus(k8sDeployment, msg)
 }
 
-func oldReplicasPendingTerminationStatus(k8sDeployment *appsv1.Deployment) *hyperion.OperationStatus {
+func oldReplicasPendingTerminationStatus(k8sDeployment *appsv1.Deployment) *anysched.OperationStatus {
 	msg := fmt.Sprintf("%d old replicas are pending termination...",
 		k8sDeployment.Status.Replicas-k8sDeployment.Status.UpdatedReplicas)
 	return notDoneStatus(k8sDeployment, msg)
 }
 
-func deploymentSuccessStatus(k8sDeployment *appsv1.Deployment) *hyperion.OperationStatus {
+func deploymentSuccessStatus(k8sDeployment *appsv1.Deployment) *anysched.OperationStatus {
 	msg := fmt.Sprintf("Deployment %q successfully rolled out. %d of %d updated replicas are available.",
 		k8sDeployment.GetName(), k8sDeployment.Status.AvailableReplicas, k8sDeployment.Status.UpdatedReplicas)
 	return doneStatus(k8sDeployment, msg)
 }
 
-func notDoneStatus(k8sDeployment *appsv1.Deployment, msg string) *hyperion.OperationStatus {
+func notDoneStatus(k8sDeployment *appsv1.Deployment, msg string) *anysched.OperationStatus {
 	msg = fmt.Sprintf("%s: %s", waitingForDeploymentMsg(k8sDeployment), msg)
 	return status(k8sDeployment, msg, false)
 }
 
-func doneStatus(k8sDeployment *appsv1.Deployment, msg string) *hyperion.OperationStatus {
+func doneStatus(k8sDeployment *appsv1.Deployment, msg string) *anysched.OperationStatus {
 	return status(k8sDeployment, msg, true)
 }
 
-func status(k8sDeployment *appsv1.Deployment, msg string, done bool) *hyperion.OperationStatus {
+func status(k8sDeployment *appsv1.Deployment, msg string, done bool) *anysched.OperationStatus {
 	lastTransitionTime, lastUpdateTime := mostRecentConditionTimes(k8sDeployment.Status)
-	return &hyperion.OperationStatus{
+	return &anysched.OperationStatus{
 		ClientTime:         time.Now(),
 		LastTransitionTime: lastTransitionTime,
 		LastUpdateTime:     lastUpdateTime,

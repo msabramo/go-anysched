@@ -19,28 +19,30 @@ import (
 	"io"
 	"os"
 
-	"git.corp.adobe.com/abramowi/hyperion"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
+	"github.com/msabramo/go-anysched"
 )
 
-// taskListCmd represents the "task list" command
-var taskListCmd = &cobra.Command{
+// svcListCmd represents the "svc list" command
+var svcListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "List running tasks",
+	Short: "List running services",
 	Run: func(cmd *cobra.Command, args []string) {
 		manager := getManager()
-		tasks, err := manager.Tasks()
+		svcs, err := manager.Svcs()
 		if err != nil {
-			_, err2 := fmt.Fprintf(os.Stderr, "task list: Tasks error: %s\n", err)
+			_, err2 := fmt.Fprintf(os.Stderr, "svc list: Svcs error: %s\n", err)
 			if err2 != nil {
 				panic(err2)
 			}
 			return
 		}
-		err = output(os.Stdout, tasks, viper.GetString("output_format"), outputTaskListTable)
+
+		err = output(os.Stdout, svcs, viper.GetString("output_format"), outputSvcListTable)
 		if err != nil {
-			_, err2 := fmt.Fprintf(os.Stderr, "task list: output error: %s\n", err)
+			_, err2 := fmt.Fprintf(os.Stderr, "svc list: output error: %s\n", err)
 			if err2 != nil {
 				panic(err2)
 			}
@@ -49,11 +51,10 @@ var taskListCmd = &cobra.Command{
 	},
 }
 
-func outputTaskListTable(w io.Writer, data interface{}) error {
-	tasks := data.([]hyperion.Task)
-	for _, task := range tasks {
-		_, err := fmt.Fprintf(w, "%-40s %-16s %-16s %s\n", task.Name, task.HostIP, task.TaskIP, task.ReadyTime)
-		if err != nil {
+func outputSvcListTable(w io.Writer, data interface{}) error {
+	svcs := data.([]anysched.Svc)
+	for _, svc := range svcs {
+		if _, err := fmt.Fprintf(w, "%-40s\n", svc.ID); err != nil {
 			panic(err)
 		}
 	}
@@ -61,9 +62,9 @@ func outputTaskListTable(w io.Writer, data interface{}) error {
 }
 
 func init() {
-	taskCmd.AddCommand(taskListCmd)
+	svcCmd.AddCommand(svcListCmd)
 
-	taskListCmd.Flags().StringP("output-format", "f", "yaml", `output format: "table", "yaml", "json"`)
+	svcListCmd.Flags().StringP("output-format", "f", "yaml", `output format: "table", "yaml", "json"`)
 	if err := viper.BindPFlag("output_format", taskListCmd.Flags().Lookup("output-format")); err != nil {
 		panic(err)
 	}

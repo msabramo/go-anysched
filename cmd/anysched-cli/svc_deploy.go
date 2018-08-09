@@ -24,11 +24,11 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"git.corp.adobe.com/abramowi/hyperion"
+	"github.com/msabramo/go-anysched"
 )
 
 var (
-	deploySettings  = struct{ svcCfg hyperion.SvcCfg }{}
+	deploySettings  = struct{ svcCfg anysched.SvcCfg }{}
 	timeoutDuration = 15 * time.Second
 )
 

@@ -10,7 +10,7 @@ import (
 	"github.com/docker/docker/api/types/swarm"
 	dockerclient "github.com/docker/docker/client"
 
-	"git.corp.adobe.com/abramowi/hyperion"
+	"github.com/msabramo/go-anysched"
 )
 
 var ctx = context.TODO()
@@ -21,11 +21,11 @@ type manager struct {
 }
 
 func init() {
-	hyperion.RegisterManagerType("dockerswarm", NewManager)
+	anysched.RegisterManagerType("dockerswarm", NewManager)
 }
 
 // NewManager returns a Manager for Docker Swarm.
-func NewManager(url string) (hyperion.Manager, error) {
+func NewManager(url string) (anysched.Manager, error) {
 	client, err := dockerclient.NewEnvClient()
 	if err != nil {
 		return nil, errors.Wrap(err, "dockerswarm.NewManager: dockerclient.NewEnvClient failed")
@@ -34,22 +34,22 @@ func NewManager(url string) (hyperion.Manager, error) {
 }
 
 // Svcs returns info about all running services.
-func (mgr *manager) Svcs() ([]hyperion.Svc, error) {
+func (mgr *manager) Svcs() ([]anysched.Svc, error) {
 	return nil, errors.New("dockerswarm.manager.Svcs: Not implemented")
 }
 
 // SvcTasks returns info about the running tasks for a service.
-func (mgr *manager) SvcTasks(svcCfg hyperion.SvcCfg) ([]hyperion.Task, error) {
+func (mgr *manager) SvcTasks(svcCfg anysched.SvcCfg) ([]anysched.Task, error) {
 	return nil, errors.New("dockerswarm.manager.SvcTasks: Not implemented")
 }
 
 // Tasks returns info about all running tasks.
-func (mgr *manager) Tasks() ([]hyperion.Task, error) {
+func (mgr *manager) Tasks() ([]anysched.Task, error) {
 	return nil, errors.New("dockerswarm.manager.Tasks: Not implemented")
 }
 
 // DeploySvc takes a SvcCfg and deploys it, returning an Operation.
-func (mgr *manager) DeploySvc(svcCfg hyperion.SvcCfg) (hyperion.Operation, error) {
+func (mgr *manager) DeploySvc(svcCfg anysched.SvcCfg) (anysched.Operation, error) {
 	count := uint64(svcCfg.Count)
 	service := swarm.ServiceSpec{
 		Annotations: swarm.Annotations{
@@ -76,7 +76,7 @@ func (mgr *manager) DeploySvc(svcCfg hyperion.SvcCfg) (hyperion.Operation, error
 }
 
 // DestroySvc destroys a service.
-func (mgr *manager) DestroySvc(svcID string) (hyperion.Operation, error) {
+func (mgr *manager) DestroySvc(svcID string) (anysched.Operation, error) {
 	err := mgr.client.ServiceRemove(ctx, svcID)
 	if err != nil {
 		return nil, errors.Wrap(err, "dockerswarm.manager.DestroySvc: mgr.client.ServiceRemove failed")

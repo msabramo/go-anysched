@@ -4,32 +4,32 @@ import (
 	"fmt"
 	"os"
 
-	"git.corp.adobe.com/abramowi/hyperion"
-	_ "git.corp.adobe.com/abramowi/hyperion/managers/kubernetes"
+	"github.com/msabramo/go-anysched"
+	_ "github.com/msabramo/go-anysched/managers/kubernetes"
 )
 
 func doStuff() error {
-	managerConfig := hyperion.ManagerConfig{Type: "kubernetes"}
+	managerConfig := anysched.ManagerConfig{Type: "kubernetes"}
 	// or alternatively one of the following:
 	//
-	// managerConfig := hyperion.ManagerConfig{
+	// managerConfig := anysched.ManagerConfig{
 	// 	Type:    "marathon",
 	// 	Address: "http://127.0.0.1:8080",
 	// }
-	// managerConfig := hyperion.ManagerConfig{
+	// managerConfig := anysched.ManagerConfig{
 	// 	Type:    "dockerswarm",
 	// 	Address: "http://127.0.0.1:2377",
 	// }
-	// managerConfig := hyperion.ManagerConfig{
+	// managerConfig := anysched.ManagerConfig{
 	// 	Type:    "nomad",
 	// 	Address: "http://127.0.0.1:4646",
 	// }
 
-	manager, err := hyperion.NewManager(managerConfig)
+	manager, err := anysched.NewManager(managerConfig)
 	if err != nil {
 		return err
 	}
-	svcCfg := hyperion.SvcCfg{
+	svcCfg := anysched.SvcCfg{
 		ID:    "my-svc-id",
 		Image: "citizenstig/httpbin",
 		Count: 4,

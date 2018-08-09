@@ -8,7 +8,7 @@ import (
 	goMarathon "github.com/gambol99/go-marathon"
 	"github.com/pkg/errors"
 
-	"git.corp.adobe.com/abramowi/hyperion"
+	"github.com/msabramo/go-anysched"
 )
 
 type deployment struct {
@@ -29,7 +29,7 @@ func (d *deployment) GetProperties() (propertiesMap map[string]interface{}) {
 	return propertiesMap
 }
 
-func (d *deployment) GetStatus() (status *hyperion.OperationStatus, err error) {
+func (d *deployment) GetStatus() (status *anysched.OperationStatus, err error) {
 	opts := &goMarathon.GetAppOpts{
 		Embed: []string{
 			"app.tasks", "app.counts", "app.deployments",
@@ -48,25 +48,25 @@ func (d *deployment) GetStatus() (status *hyperion.OperationStatus, err error) {
 	return allTasksRunningStatus(goMarathonApp), nil
 }
 
-func notAllTasksRunningStatus(goMarathonApp *goMarathon.Application) *hyperion.OperationStatus {
+func notAllTasksRunningStatus(goMarathonApp *goMarathon.Application) *anysched.OperationStatus {
 	return statusWithTimestamps(
-		&hyperion.OperationStatus{
+		&anysched.OperationStatus{
 			Msg:  fmt.Sprintf("Not all tasks running. %d task(s) running.", goMarathonApp.TasksRunning),
 			Done: false,
 		},
 	)
 }
 
-func allTasksRunningStatus(goMarathonApp *goMarathon.Application) *hyperion.OperationStatus {
+func allTasksRunningStatus(goMarathonApp *goMarathon.Application) *anysched.OperationStatus {
 	return statusWithTimestamps(
-		&hyperion.OperationStatus{
+		&anysched.OperationStatus{
 			Msg:  fmt.Sprintf("All tasks running. %d task(s) running.", goMarathonApp.TasksRunning),
 			Done: true,
 		},
 	)
 }
 
-func statusWithTimestamps(status *hyperion.OperationStatus) *hyperion.OperationStatus {
+func statusWithTimestamps(status *anysched.OperationStatus) *anysched.OperationStatus {
 	status.ClientTime = time.Now()
 	status.LastUpdateTime = time.Now()
 	// status.LastTransitionTime = lastTransitionTime

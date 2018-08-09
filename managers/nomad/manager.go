@@ -7,8 +7,8 @@ import (
 
 	"github.com/hashicorp/nomad/api"
 
-	"git.corp.adobe.com/abramowi/hyperion"
-	"git.corp.adobe.com/abramowi/hyperion/utils"
+	"github.com/msabramo/go-anysched"
+	"github.com/msabramo/go-anysched/utils"
 )
 
 type manager struct {
@@ -18,11 +18,11 @@ type manager struct {
 }
 
 func init() {
-	hyperion.RegisterManagerType("nomad", NewManager)
+	anysched.RegisterManagerType("nomad", NewManager)
 }
 
 // NewManager returns a Manager for Kubernetes.
-func NewManager(url string) (hyperion.Manager, error) {
+func NewManager(url string) (anysched.Manager, error) {
 	config := &api.Config{Address: url}
 	client, err := api.NewClient(config)
 	if err != nil {
@@ -32,22 +32,22 @@ func NewManager(url string) (hyperion.Manager, error) {
 }
 
 // Svcs returns info about all running services.
-func (mgr *manager) Svcs() ([]hyperion.Svc, error) {
+func (mgr *manager) Svcs() ([]anysched.Svc, error) {
 	return nil, errors.New("nomad.manager.Svcs: Not implemented")
 }
 
 // SvcTasks returns info about the running tasks for a service.
-func (mgr *manager) SvcTasks(svcCfg hyperion.SvcCfg) ([]hyperion.Task, error) {
+func (mgr *manager) SvcTasks(svcCfg anysched.SvcCfg) ([]anysched.Task, error) {
 	return nil, errors.New("nomad.manager.SvcTasks: Not implemented")
 }
 
 // Tasks returns info about all running tasks.
-func (mgr *manager) Tasks() ([]hyperion.Task, error) {
+func (mgr *manager) Tasks() ([]anysched.Task, error) {
 	return nil, errors.New("nomad.manager.Tasks: Not implemented")
 }
 
 // DeploySvc takes a SvcCfg and deploys it, returning an Operation.
-func (mgr *manager) DeploySvc(svcCfg hyperion.SvcCfg) (hyperion.Operation, error) {
+func (mgr *manager) DeploySvc(svcCfg anysched.SvcCfg) (anysched.Operation, error) {
 	job := getJob(svcCfg)
 	jobRegisterResponse, writeMeta, err := mgr.jobsClient.Register(job, &api.WriteOptions{})
 	fmt.Printf("*** jobRegisterResponse = %+v; writeMeta = %+v; err = %+v\n", jobRegisterResponse, writeMeta, err)
@@ -58,7 +58,7 @@ func (mgr *manager) DeploySvc(svcCfg hyperion.SvcCfg) (hyperion.Operation, error
 }
 
 // DestroySvc destroys a service.
-func (mgr *manager) DestroySvc(svcID string) (hyperion.Operation, error) {
+func (mgr *manager) DestroySvc(svcID string) (anysched.Operation, error) {
 	purge := true
 	jobDeregisterResponse, writeMeta, err := mgr.jobsClient.Deregister(svcID, purge, &api.WriteOptions{})
 	fmt.Printf("*** jobDeregisterResponse = %+v; writeMeta = %+v; err = %+v\n", jobDeregisterResponse, writeMeta, err)
@@ -68,7 +68,7 @@ func (mgr *manager) DestroySvc(svcID string) (hyperion.Operation, error) {
 	return nil, err
 }
 
-func getJob(svcCfg hyperion.SvcCfg) *api.Job {
+func getJob(svcCfg anysched.SvcCfg) *api.Job {
 	return &api.Job{
 		ID:          utils.Sptr(svcCfg.ID),
 		Name:        utils.Sptr(svcCfg.ID),

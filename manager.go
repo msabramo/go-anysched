@@ -1,4 +1,4 @@
-package hyperion
+package anysched
 
 type newManagerFuncType func(managerAddress string) (Manager, error)
 

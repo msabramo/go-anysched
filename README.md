@@ -1,4 +1,4 @@
-# hyperion
+# anysched
 
 An experimental Go library that attempts to provide a common interface for
 various container-oriented app management systems -- e.g.:
@@ -25,24 +25,24 @@ make -C examples run-deploy-example
 This repo also comes with a CLI that allows you to exercise some of the
 library's features.
 
-Run `make build` and a binary will be built called `bin/hyperion-cli`:
+Run `make build` and a binary will be built called `bin/anysched-cli`:
 
 ```
 $ make build
-go build -o bin/hyperion-cli ./cmd/hyperion-cli
-CLICOLOR=1 ls -l bin/hyperion-cli
--rwxr-xr-x  1 abramowi  staff  44578428 Jul 17 16:26 bin/hyperion-cli
+go build -o bin/anysched-cli ./cmd/anysched-cli
+CLICOLOR=1 ls -l bin/anysched-cli
+-rwxr-xr-x  1 abramowi  staff  44578428 Jul 17 16:26 bin/anysched-cli
 ```
 
 You can run it to get help:
 
 ```
-$ bin/hyperion-cli
-A command that demos the hyperion library, allowing the user
+$ bin/anysched-cli
+A command that demos the anysched library, allowing the user
 to deploy services to Marathon, Kubernetes, etc.
 
 Usage:
-  hyperion-cli [command]
+  anysched-cli [command]
 
 Available Commands:
   help        Help about any command
@@ -50,11 +50,11 @@ Available Commands:
   task        Commands for managing tasks
 
 Flags:
-      --config string   config file (default is $HOME/.hyperion-cli.yaml)
+      --config string   config file (default is $HOME/.anysched-cli.yaml)
   -e, --env string      environment to target
-  -h, --help            help for hyperion-cli
+  -h, --help            help for anysched-cli
 
-Use "hyperion-cli [command] --help" for more information about a command.
+Use "anysched-cli [command] --help" for more information about a command.
 ```
 
 Some things you can do:
@@ -62,13 +62,13 @@ Some things you can do:
 ### Deploy a service
 
 ```
-bin/hyperion-cli svc deploy --svc-id=httpbin --image=citizenstig/httpbin:latest --count=3
+bin/anysched-cli svc deploy --svc-id=httpbin --image=citizenstig/httpbin:latest --count=3
 ```
 
 ### Destroy a service
 
 ```
-bin/hyperion-cli svc destroy --svc-id=httpbin
+bin/anysched-cli svc destroy --svc-id=httpbin
 ```
 
 ## Unit tests
@@ -78,21 +78,21 @@ Run `make test`.
 ```
 $ make test
 go test ./...
-ok  	git.corp.adobe.com/abramowi/hyperion	0.037s
-?   	git.corp.adobe.com/abramowi/hyperion/cmd/hyperion-cli	[no test files]
-?   	git.corp.adobe.com/abramowi/hyperion/examples	[no test files]
-ok  	git.corp.adobe.com/abramowi/hyperion/managers/dockerswarm	0.042s
-ok  	git.corp.adobe.com/abramowi/hyperion/managers/kubernetes	0.070s
-ok  	git.corp.adobe.com/abramowi/hyperion/managers/marathon	0.037s
-ok  	git.corp.adobe.com/abramowi/hyperion/managers/nomad	0.037s
-ok  	git.corp.adobe.com/abramowi/hyperion/utils	0.075s
+ok  	github.com/msabramo/go-anysched	0.037s
+?   	github.com/msabramo/go-anysched/cmd/anysched-cli	[no test files]
+?   	github.com/msabramo/go-anysched/examples	[no test files]
+ok  	github.com/msabramo/go-anysched/managers/dockerswarm	0.042s
+ok  	github.com/msabramo/go-anysched/managers/kubernetes	0.070s
+ok  	github.com/msabramo/go-anysched/managers/marathon	0.037s
+ok  	github.com/msabramo/go-anysched/managers/nomad	0.037s
+ok  	github.com/msabramo/go-anysched/utils	0.075s
 ```
 
 ## Unit test coverage
 
 ```
 $ make test-cover
-HYPERIONCLI_ENV=minikube scripts/coverage
+ANYSCHEDCLI_ENV=minikube scripts/coverage
 ok      .                                          0.061s coverage: 100.0% of statements
 ok      ./managers/dockerswarm                     0.072s coverage:  20.0% of statements
 ok      ./managers/kubernetes                      8.205s coverage:  91.6% of statements
@@ -117,8 +117,8 @@ $ make cli-smoketest-marathon
 Deploying service in local_marathon ...
 --------------------------------------------------------------------------------
 
-bin/hyperion-cli svc deploy --svc-id=hyperion-cli-test-20180717164354 --image=k8s.gcr.io/echoserver:1.4 --count=1
-Using config file: /Users/abramowi/go/src/git.corp.adobe.com/abramowi/hyperion/hyperion-cli.yaml
+bin/anysched-cli svc deploy --svc-id=anysched-cli-test-20180717164354 --image=k8s.gcr.io/echoserver:1.4 --count=1
+Using config file: /Users/abramowi/go/src/github.com/msabramo/go-anysched/anysched-cli.yaml
 marathonDeploymentID           : 173497ab-9d3d-4fe1-8b9a-e0e6377219fe
 
 [2018-07-17T16:43:55-07:00] Not all tasks running. 0 task(s) running.
@@ -126,8 +126,8 @@ marathonDeploymentID           : 173497ab-9d3d-4fe1-8b9a-e0e6377219fe
 [2018-07-17T16:43:57-07:00] All tasks running. 1 task(s) running.
 Deployment completed in 3.356941183s
 
-- name: hyperion-cli-test-20180717164354.4aa0eb1e-8a1b-11e8-9076-0242ac120005
-  app-id: /hyperion-cli-test-20180717164354
+- name: anysched-cli-test-20180717164354.4aa0eb1e-8a1b-11e8-9076-0242ac120005
+  app-id: /anysched-cli-test-20180717164354
   host-name: slave2.192.168.65.3.xip.io
   ip-addresses:
   - 172.17.0.2
@@ -143,9 +143,9 @@ Deployment completed in 3.356941183s
 Destroying service in local_marathon ...
 --------------------------------------------------------------------------------
 
-bin/hyperion-cli svc destroy --svc-id=hyperion-cli-test-20180717164354
-Using config file: /Users/abramowi/go/src/git.corp.adobe.com/abramowi/hyperion/hyperion-cli.yaml
-Service "hyperion-cli-test-20180717164354" deleted.
+bin/anysched-cli svc destroy --svc-id=anysched-cli-test-20180717164354
+Using config file: /Users/abramowi/go/src/github.com/msabramo/go-anysched/anysched-cli.yaml
+Service "anysched-cli-test-20180717164354" deleted.
 ```
 
 If you have Kubernetes running (e.g.: [minikube]), then you can run `make
@@ -153,28 +153,28 @@ cli-smoketest-kubernetes`:
 
 ```
 $ make cli-smoketest-kubernetes
-HYPERIONCLI_ENV=kubeconfig /Library/Developer/CommandLineTools/usr/bin/make _cli-smoketest
+ANYSCHEDCLI_ENV=kubeconfig /Library/Developer/CommandLineTools/usr/bin/make _cli-smoketest
 
 --------------------------------------------------------------------------------
 Deploying service in kubeconfig ...
 --------------------------------------------------------------------------------
 
-bin/hyperion-cli svc deploy --svc-id=hyperion-cli-test-20180717164028 --image=k8s.gcr.io/echoserver:1.4 --count=1
-Using config file: /Users/abramowi/go/src/git.corp.adobe.com/abramowi/hyperion/hyperion-cli.yaml
-name                           : hyperion-cli-test-20180717164028
+bin/anysched-cli svc deploy --svc-id=anysched-cli-test-20180717164028 --image=k8s.gcr.io/echoserver:1.4 --count=1
+Using config file: /Users/abramowi/go/src/github.com/msabramo/go-anysched/anysched-cli.yaml
+name                           : anysched-cli-test-20180717164028
 creationTimestamp              : 2018-07-17T15:53:39-07:00
 resourceVersion                : 545751
-selfLink                       : /apis/apps/v1/namespaces/default/deployments/hyperion-cli-test-20180717164028
+selfLink                       : /apis/apps/v1/namespaces/default/deployments/anysched-cli-test-20180717164028
 spec.strategy                  : {RollingUpdate &RollingUpdateDeployment{MaxUnavailable:25%,MaxSurge:25%,}}
 uid                            : 3f2e6af8-8a14-11e8-ba27-08002786bb43
 namespace                      : default
 generation                     : 1
 
-[2018-07-17T15:53:39-07:00] Waiting for deployment "hyperion-cli-test-20180717164028" to finish: 0 of 1 updated replicas are available...
-[2018-07-17T15:53:41-07:00] Deployment "hyperion-cli-test-20180717164028" successfully rolled out. 1 of 1 updated replicas are available.
+[2018-07-17T15:53:39-07:00] Waiting for deployment "anysched-cli-test-20180717164028" to finish: 0 of 1 updated replicas are available...
+[2018-07-17T15:53:41-07:00] Deployment "anysched-cli-test-20180717164028" successfully rolled out. 1 of 1 updated replicas are available.
 Deployment completed in 2.108763226s
 
-- name: hyperion-cli-test-20180717164028-74d75f6d56-jlf55
+- name: anysched-cli-test-20180717164028-74d75f6d56-jlf55
   host-ip: 10.0.2.15
   task-ip: 172.17.0.10
   ready-time: 2018-07-17T15:53:41-07:00
@@ -183,9 +183,9 @@ Deployment completed in 2.108763226s
 Destroying service in kubeconfig ...
 --------------------------------------------------------------------------------
 
-bin/hyperion-cli svc destroy --svc-id=hyperion-cli-test-20180717164028
-Using config file: /Users/abramowi/go/src/git.corp.adobe.com/abramowi/hyperion/hyperion-cli.yaml
-Service "hyperion-cli-test-20180717164028" deleted.
+bin/anysched-cli svc destroy --svc-id=anysched-cli-test-20180717164028
+Using config file: /Users/abramowi/go/src/github.com/msabramo/go-anysched/anysched-cli.yaml
+Service "anysched-cli-test-20180717164028" deleted.
 ```
 
 If you have both Marathon and Kubernetes running, then you can run `make
@@ -200,9 +200,9 @@ $ make
 build                          Build all the things
 check                          Run tests and linters
 clean                          Clean up files that aren't checked into version control
-cli-smoketest-kubernetes       Quickly exercise hyperion-cli for Marathon
-cli-smoketest-marathon         Quickly exercise hyperion-cli for Marathon
-cli-smoketest                  Quickly exercise hyperion-cli for Marathon and Kubernetes
+cli-smoketest-kubernetes       Quickly exercise anysched-cli for Marathon
+cli-smoketest-marathon         Quickly exercise anysched-cli for Marathon
+cli-smoketest                  Quickly exercise anysched-cli for Marathon and Kubernetes
 lint                           Run golint linter
 metalinter                     Run gometalinter, which does a bunch of checks
 test-cover-html                Generate HTML test coverage report
@@ -230,7 +230,7 @@ Step 1/11 : FROM golang:alpine AS build-env
 Step 2/11 : RUN apk add --update git
  ---> Running in f2fa64a62f5b
 ...
-Using config file: /workdir/hyperion-cli.yaml
+Using config file: /workdir/anysched-cli.yaml
 name                           : httpbin
 selfLink                       : /apis/apps/v1/namespaces/default/deployments/httpbin
 spec.strategy                  : {RollingUpdate &RollingUpdateDeployment{MaxUnavailable:25%,MaxSurge:25%,}}

@@ -1,14 +1,14 @@
 #!/bin/sh
 
-if ! docker images 2> /dev/null | grep -q hyperion-cli; then
+if ! docker images 2> /dev/null | grep -q anysched-cli; then
     echo "Building docker image..."
-    docker build -t hyperion-cli .
+    docker build -t anysched-cli .
 fi
 
 exec docker run \
-    -v $(pwd)/hyperion-cli.yaml:/workdir/hyperion-cli.yaml \
+    -v $(pwd)/anysched-cli.yaml:/workdir/anysched-cli.yaml \
     -v ~/.kube:/root/.kube \
     -it \
     --rm \
-    hyperion-cli \
+    anysched-cli \
     "$@"

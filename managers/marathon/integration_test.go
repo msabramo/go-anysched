@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"time"
 
-	"git.corp.adobe.com/abramowi/hyperion"
+	"github.com/msabramo/go-anysched"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -30,11 +30,11 @@ var _ = Describe("Marathon integration test", func() {
 
 	Describe("deploying to Marathon", func() {
 		It("deploys a service to Marathon as a Marathon application", func() {
-			manager, err := hyperion.NewManager(
-				hyperion.ManagerConfig{Type: "marathon", Address: "http://127.0.0.1:8080"},
+			manager, err := anysched.NewManager(
+				anysched.ManagerConfig{Type: "marathon", Address: "http://127.0.0.1:8080"},
 			)
 			Expect(err).ToNot(HaveOccurred())
-			svc := hyperion.SvcCfg{ID: "my-svc", Image: "citizenstig/httpbin:latest", Count: 2}
+			svc := anysched.SvcCfg{ID: "my-svc", Image: "citizenstig/httpbin:latest", Count: 2}
 			deployOperation, err := manager.DeploySvc(svc)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(deployOperation).ToNot(BeNil())

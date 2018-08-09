@@ -21,20 +21,20 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"git.corp.adobe.com/abramowi/hyperion"
-	_ "git.corp.adobe.com/abramowi/hyperion/managers/dockerswarm"
-	_ "git.corp.adobe.com/abramowi/hyperion/managers/kubernetes"
-	_ "git.corp.adobe.com/abramowi/hyperion/managers/marathon"
-	_ "git.corp.adobe.com/abramowi/hyperion/managers/nomad"
+	"github.com/msabramo/go-anysched"
+	_ "github.com/msabramo/go-anysched/managers/dockerswarm"
+	_ "github.com/msabramo/go-anysched/managers/kubernetes"
+	_ "github.com/msabramo/go-anysched/managers/marathon"
+	_ "github.com/msabramo/go-anysched/managers/nomad"
 )
 
 var cfgFile string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "hyperion-cli",
-	Short: "A command for demoing the hyperion library",
-	Long: `A command that demos the hyperion library, allowing the user
+	Use:   "anysched-cli",
+	Short: "A command for demoing the anysched library",
+	Long: `A command that demos the anysched library, allowing the user
 to deploy services to Marathon, Kubernetes, etc.`,
 }
 
@@ -54,7 +54,7 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "",
-		"config file (default is to look for hyperion-cli.yaml in ~/.config/hyperion-cli/, ./, and ./etc/)")
+		"config file (default is to look for anysched-cli.yaml in ~/.config/anysched-cli/, ./, and ./etc/)")
 	rootCmd.PersistentFlags().StringP("env", "e", "", "environment to target")
 	if err := viper.BindPFlag("env", rootCmd.PersistentFlags().Lookup("env")); err != nil {
 		panic(err)
@@ -67,13 +67,13 @@ func initConfig() {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
 	} else {
-		viper.AddConfigPath("$HOME/.config/hyperion-cli")
+		viper.AddConfigPath("$HOME/.config/anysched-cli")
 		viper.AddConfigPath(".")
 		viper.AddConfigPath("./etc")
-		viper.SetConfigName("hyperion-cli")
+		viper.SetConfigName("anysched-cli")
 	}
 
-	viper.SetEnvPrefix("HYPERIONCLI")
+	viper.SetEnvPrefix("ANYSCHEDCLI")
 	viper.AutomaticEnv() // read in environment variables that match
 
 	// If a config file is found, read it in.
@@ -82,9 +82,9 @@ func initConfig() {
 	}
 }
 
-func getManager() hyperion.Manager {
+func getManager() anysched.Manager {
 	managerConfig := getManagerConfig()
-	manager, err := hyperion.NewManager(managerConfig)
+	manager, err := anysched.NewManager(managerConfig)
 	if err != nil {
 		if _, err = fmt.Fprintf(os.Stderr, "error: %s\n", err); err != nil {
 			panic(err)
@@ -94,14 +94,14 @@ func getManager() hyperion.Manager {
 	return manager
 }
 
-func getManagerConfig() hyperion.ManagerConfig {
+func getManagerConfig() anysched.ManagerConfig {
 	env := viper.GetString("env")
 	if env == "" {
 		die(`
 			No env set. Set it with:
 			  * --env option on command-line
 			  * "env" setting in config file
-			  * HYPERIONCLI_ENV environment variable`)
+			  * ANYSCHEDCLI_ENV environment variable`)
 	}
 	envRootKey := fmt.Sprintf("envs.%s", env)
 	if viper.Get(envRootKey) == nil {
@@ -109,5 +109,5 @@ func getManagerConfig() hyperion.ManagerConfig {
 	}
 	managerType := viper.GetString(envRootKey + ".type")
 	managerAddress := viper.GetString(envRootKey + ".address")
-	return hyperion.ManagerConfig{Type: managerType, Address: managerAddress}
+	return anysched.ManagerConfig{Type: managerType, Address: managerAddress}
 }

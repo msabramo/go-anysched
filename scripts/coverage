@@ -10,7 +10,7 @@ mkdir -p coverage
 
 time go test -cover -coverprofile coverage/total.coverprofile $(go list -f '{{.ImportPath}}' ./...) \
     | awk '$1 != "?" { \
-          gsub("git.corp.adobe.com/abramowi/hyperion", ".", $2); \
+          gsub("github.com/msabramo/go-anysched", ".", $2); \
           printf("%-7s %-40s %8s %s %6s %s %s %s %s\n", $1, $2, $3, $4, $5, $6, $7, $8, $9) \
       }'
 
@@ -24,7 +24,7 @@ exit 0
 go get github.com/msabramo/gocover-cobertura
 echo; echo "Generating coverage/total-cobertura.xml (Cobertura XML file)"
 gocover-cobertura < coverage/total.coverprofile \
-    | sed -e 's#git.corp.adobe.com/abramowi/hyperion/##g' > $COBERTURA_XML_FILE
+    | sed -e 's#github.com/msabramo/go-anysched/##g' > $COBERTURA_XML_FILE
 ls -l $COBERTURA_XML_FILE
 
 echo; echo "Running diff-cover..."
